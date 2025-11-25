@@ -1,12 +1,12 @@
 import React from "react";
 import { useEffect } from "react";
-import Navbar from "./components/Navbar";
-import HeroSection from "./components/HeroSection";
-import FeaturedCategories from "./components/FeaturedCategories";
-import Footer from "./components/Footer";
-import OffersBanner from "./components/OffersBanner";
-import Testimonials from "./components/Testimonials";
-import ProductGrid from "./components/ProductGrid";
+import Navbar from "./Components/Navbar";
+import HeroSection from "./Components/HeroSection";
+import FeaturedCategories from "./Components/FeaturedCategories";
+import Footer from "./Components/Footer";
+import OffersBanner from "./Components/OffersBanner";
+import Testimonials from "./Components/Testimonials";
+import ProductGrid from "./Components/ProductGrid";
 
 export default function App() {
 
