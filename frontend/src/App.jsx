@@ -1,5 +1,6 @@
 import React from "react";
 import { useEffect } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import HeroSection from "./components/HeroSection";
 import FeaturedCategories from "./components/FeaturedCategories";
@@ -7,6 +8,8 @@ import Footer from "./components/Footer";
 import OffersBanner from "./components/OffersBanner";
 import Testimonials from "./components/Testimonials";
 import ProductGrid from "./components/ProductGrid";
+// import Login from "./pages/LoginPopup";
+// import Signup from "./pages/SignupPopup";
 
 export default function App() {
 
@@ -17,6 +20,7 @@ export default function App() {
     if (saved === "light") document.documentElement.classList.remove("dark");
   }, []);
   return (
+     <BrowserRouter>
     <div
       className="
         min-h-screen 
@@ -80,14 +84,25 @@ export default function App() {
           transition-all
         "
       >
-        <Navbar />
-        <HeroSection />
-        <FeaturedCategories />
-        <ProductGrid />
-        <OffersBanner/>
-        <Testimonials/>
-        <Footer/>
+        {/* ⭐ Navbar ALWAYS needs to be inside Router */}
+          <Navbar />
+
+          {/* ⭐ Routes for pages */}
+          <Routes>
+            <Route path="/" element={<HeroSection />} />
+            {/* <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} /> */}
+          </Routes>
+
+          {/* ⭐ Home Components only for home page */}
+          <FeaturedCategories />
+          <ProductGrid />
+          <OffersBanner />
+          <Testimonials />
+          <Footer />
+        </div>
       </div>
-    </div>
+
+    </BrowserRouter>
   );
 }  

@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "../hooks/useFlyToCart";
+import { useNavigate } from "react-router-dom";
 import icon from "../../public/assets/icons/icon.png";
+
+import PopupCard from "./Popupcard";
+import LoginPopup from "../pages/LoginPopup";
+import SignupPopup from "../pages/SignupPopup";
 
 const MENU_ITEMS = [
   { id: "menu", label: "Menu" },
@@ -23,14 +28,20 @@ const SEARCH_DATA = [
   "Organic Products",
 ];
 
-// 🔥 Convert search text into URL slug
 const toSlug = (text) =>
   text.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
 
 export default function Navbar() {
+  const navigate = useNavigate();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+
+  // ⭐ POPUP STATES
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
 
   const [isDark, setIsDark] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -40,11 +51,14 @@ export default function Navbar() {
   const lastScrollY = useRef(0);
   const { cartRef } = useFlyToCart();
 
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    localStorage.getItem("loggedIn") === "true"
+  );
+
   const filtered = SEARCH_DATA.filter((i) =>
     i.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // NAVBAR SCROLL EFFECT
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
@@ -57,7 +71,6 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // THEME
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
@@ -67,26 +80,22 @@ export default function Navbar() {
 
   return (
     <>
-      {/* NAVBAR */}
       <motion.header
         initial={{ y: 0 }}
         animate={{ y: visible ? 0 : -120 }}
         transition={{ duration: 0.25 }}
-        className={`fixed ${
-          isAtTop ? "top-4" : "top-2"
-        } left-1/2 -translate-x-1/2 w-[96%] md:w-[92%] z-50 rounded-xl
-        transition-all duration-300 ${
-          isAtTop
+        className={`fixed ${isAtTop ? "top-4" : "top-2"
+          } left-1/2 -translate-x-1/2 w-[96%] md:w-[92%] z-50 rounded-xl
+        transition-all duration-300 ${isAtTop
             ? "bg-transparent"
             : "backdrop-blur-xl bg-white/30 dark:bg-black/40 shadow-lg"
-        }`}
+          }`}
       >
         <div
-          className={`flex items-center justify-between px-4 md:px-8 ${
-            isShrunk ? "py-2" : "py-4"
-          }`}
+          className={`flex items-center justify-between px-4 md:px-8 ${isShrunk ? "py-2" : "py-4"
+            }`}
         >
-          {/* LEFT — LOGO + HAMBURGER */}
+          {/* LEFT SECTION */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setDrawerOpen(true)}
@@ -109,7 +118,7 @@ export default function Navbar() {
             </motion.div>
           </div>
 
-          {/* MIDDLE MENU (Desktop Only) */}
+          {/* MIDDLE MENU */}
           <nav className="hidden md:flex gap-8 items-center">
             {MENU_ITEMS.map((m) => (
               <span
@@ -121,10 +130,9 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* RIGHT SECTION — SEARCH + CART + THEME */}
+          {/* RIGHT SECTION */}
           <div className="flex items-center gap-4 relative">
 
-            {/* 🔍 SEARCH ICON → SHOW ONLY IF SEARCH CLOSED */}
             {!searchOpen && (
               <button
                 onClick={() => setSearchOpen(true)}
@@ -134,7 +142,6 @@ export default function Navbar() {
               </button>
             )}
 
-            {/* INLINE SEARCH INPUT + SEARCH BUTTON */}
             {searchOpen && (
               <motion.div
                 initial={{ width: 0, opacity: 0 }}
@@ -150,7 +157,6 @@ export default function Navbar() {
                   onChange={(e) => setSearchText(e.target.value)}
                 />
 
-                {/* 🔎 CLICKABLE SEARCH BUTTON */}
                 <button
                   onClick={() => {
                     if (searchText.trim().length > 0) {
@@ -163,7 +169,6 @@ export default function Navbar() {
                   🔎
                 </button>
 
-                {/* ❌ CLOSE SEARCH */}
                 <button
                   onClick={() => {
                     setSearchOpen(false);
@@ -176,12 +181,70 @@ export default function Navbar() {
               </motion.div>
             )}
 
-            {/* CART ICON */}
-            <div ref={cartRef} className="text-2xl cursor-pointer">
-              🛒
-            </div>
+            {/* LOGIN BUTTON → NOW OPENS POPUP */}
+            {!isLoggedIn && (
+              // <button
+              //   onClick={() => setShowLogin(true)}
+              //   className="px-4 py-2 rounded-lg bg-green-500 text-white font-semibold hover:bg-green-600 transition"
+              // >
+              //   Login
+              // </button>
+              <button
+                onClick={() => setShowLogin(true)}
+                className="
+    group relative px-7 py-2.5 rounded-xl 
+    font-semibold text-black
+    bg-gradient-to-r from-lime-400 to-green-500
+    shadow-[0_0_22px_rgba(0,255,120,0.5)]
+    hover:shadow-[0_0_30px_rgba(0,255,140,0.8)]
+    transition-all duration-300
+    overflow-hidden
+    hover:-translate-y-0.5
+  "
+              >
+                {/* Animated Diagonal Shine */}
+                <span
+                  className="
+      absolute inset-0 
+      bg-gradient-to-r from-white/10 via-white/40 to-white/10 
+      -translate-x-full group-hover:translate-x-full
+      transition-transform duration-700 
+      skew-x-12
+    "
+                ></span>
 
-            {/* 🌗 THEME TOGGLE */}
+                {/* Soft Prism Inner Glow */}
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/10 to-transparent opacity-30"></span>
+
+                {/* Neon Aura Pulse */}
+                <span className="absolute -inset-1 rounded-xl border border-green-300/40 blur-sm opacity-40"></span>
+
+                <span className="relative z-10 tracking-wide font-bold text-black">
+                  Login
+                </span>
+              </button>
+
+
+            )}
+
+            {/* CART */}
+            {isLoggedIn && (
+              <div ref={cartRef} className="text-2xl cursor-pointer">
+                🛒
+              </div>
+            )}
+
+            {/* PROFILE */}
+            {isLoggedIn && (
+              <div
+                className="w-9 h-9 cursor-pointer rounded-full bg-green-500 flex justify-center items-center text-white text-lg font-bold"
+                onClick={() => alert("Profile Clicked!")}
+              >
+                P
+              </div>
+            )}
+
+            {/* THEME */}
             <button
               onClick={toggleTheme}
               className="p-2 rounded-full border bg-white/10 dark:bg-black/20"
@@ -191,7 +254,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* SEARCH DROPDOWN RESULTS */}
+        {/* SEARCH DROPDOWN */}
         {searchOpen && searchText && (
           <div className="bg-white dark:bg-gray-900 shadow-xl rounded-xl mx-6 mt-2 p-3 max-h-60 overflow-auto">
             {filtered.length > 0 ? (
@@ -250,6 +313,26 @@ export default function Navbar() {
           </>
         )}
       </AnimatePresence>
+
+      {/* ⭐ LOGIN POPUP */}
+      <PopupCard open={showLogin} onClose={() => setShowLogin(false)}>
+        <LoginPopup
+          switchToSignup={() => {
+            setShowLogin(false);
+            setShowSignup(true);
+          }}
+        />
+      </PopupCard>
+
+      {/* ⭐ SIGNUP POPUP */}
+      <PopupCard open={showSignup} onClose={() => setShowSignup(false)}>
+        <SignupPopup
+          switchToLogin={() => {
+            setShowSignup(false);
+            setShowLogin(true);
+          }}
+        />
+      </PopupCard>
     </>
   );
 }
