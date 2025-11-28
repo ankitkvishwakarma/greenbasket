@@ -4,115 +4,105 @@ import banner from "../../public/assets/herosection.png";
 
 export default function HeroSection() {
   return (
-    <div
+    <section
       className="
-  pt-16     
-  min-h-[90vh] 
-  relative
-  overflow-hidden
-  flex items-center justify-center 
-  bg-gradient-to-br 
-  from-green-100 to-green-300 
-  dark:from-[#0a0f1e] dark:to-[#111827]
-  p-10 rounded-3xl mt-2 mx-4   <!-- mt कम कर दिया -->
-  shadow-[0_8px_40px_rgba(0,0,0,0.15)]
-  dark:shadow-[0_8px_40px_rgba(255,255,255,0.08)]
-  transition-colors
-  "
+      relative overflow-hidden rounded-3xl mx-3 md:mx-5 mt-4
+      min-h-[90vh] flex items-center justify-center
+      bg-gradient-to-br from-green-200 to-green-300
+      dark:from-[#08121f] dark:to-[#0f192c]
+      p-6 sm:p-10 lg:p-16
+      shadow-[0_12px_45px_rgba(0,0,0,0.18)]
+      dark:shadow-[0_12px_60px_rgba(0,255,160,0.08)]
+      transition-all
+    "
     >
 
-
-      {/* FLOATING GLOW EFFECT (Dark Mode) */}
+      {/* Background Glow Effects */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-10 -left-10 w-72 h-72 bg-green-300 opacity-25 dark:bg-green-400 dark:opacity-10 blur-[100px] rounded-full animate-pulse"></div>
-        <div className="absolute bottom-0 right-0 w-72 h-72 bg-yellow-300 opacity-20 dark:bg-yellow-500 dark:opacity-10 blur-[100px] rounded-full animate-pulse"></div>
+        <div className="absolute top-0 left-0 w-64 h-64 bg-green-400/25 dark:bg-green-500/10 blur-[120px]" />
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-yellow-300/25 dark:bg-yellow-500/10 blur-[130px]" />
+        <div className="absolute -bottom-10 left-1/3 w-52 h-52 bg-green-200/20 blur-[85px]" />
       </div>
 
-      {/* CONTENT GRID */}
-      <div className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-2 gap-20 items-center relative z-10">
+      {/* HERO GRID — MOBILE FIRST */}
+      <div
+        className="
+        max-w-7xl w-full grid 
+        grid-cols-1 md:grid-cols-2
+        gap-10 sm:gap-14 md:gap-20
+        items-center relative z-10
+      "
+      >
 
-        {/* LEFT CONTENT */}
-        <div className="space-y-8">
+        {/* IMAGE FIRST on Mobile */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 1 }}
+          className="flex justify-center order-1 md:order-none"
+        >
+          <motion.img
+            src={banner}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
+            className="
+            w-60 sm:w-72 md:w-96 lg:w-[470px]
+            drop-shadow-[0_15px_35px_rgba(0,0,0,0.25)]
+            dark:drop-shadow-[0_15px_35px_rgba(0,255,150,0.25)]
+            rounded-xl"
+          />
+        </motion.div>
 
-          {/* HEADING */}
+        {/* TEXT RIGHT ON DESKTOP */}
+        <div className="space-y-5 sm:space-y-6 text-center md:text-left">
           <motion.h1
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             className="
-              text-5xl md:text-6xl font-serif font-bold leading-tight
-              text-green-900 dark:text-green-200
-              drop-shadow-sm dark:drop-shadow-[0_0_20px_rgba(0,255,160,0.2)]
-            "
+            font-serif font-extrabold 
+            text-3xl sm:text-4xl md:text-5xl lg:text-6xl
+            text-green-900 dark:text-green-200 leading-tight drop-shadow
+          "
           >
-            FUEL Your day <br />
-            the <span className="text-green-700 dark:text-green-300">HEALTHY</span> way
+            Eat Fresh,
+            <br />
+            Live <span className="text-green-700 dark:text-green-300">Healthy</span>
           </motion.h1>
 
-          {/* SUBTEXT */}
-          <p className="text-gray-700 dark:text-gray-300 max-w-md text-lg leading-relaxed">
-            Discover our customizable salads and bowls made from the freshest
-            ingredients, sourced from local farms.
+          <p className="text-gray-700 dark:text-gray-300 text-sm sm:text-base md:text-lg max-w-md mx-auto md:mx-0 leading-relaxed">
+            Fresh fruits, vegetables & organic groceries delivered at your door.
           </p>
 
-          {/* BUTTONS */}
-          <div className="flex gap-4 items-center pt-4">
-            {/* Primary Button */}
+          {/* CTA Buttons */}
+          <div className="flex gap-4 justify-center md:justify-start pt-2">
             <motion.button
-              whileHover={{ scale: 1.07 }}
+              whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               className="
-                bg-black text-white 
-                dark:bg-white dark:text-black
-                px-8 py-3 rounded-full text-lg font-medium
-                shadow-lg hover:shadow-xl 
-                transition
-              "
+              bg-black text-white dark:bg-white dark:text-black
+              px-7 sm:px-8 py-2.5 sm:py-3 rounded-full
+              shadow-lg hover:shadow-[0_0_25px_rgba(0,255,150,0.6)]
+              transition text-sm sm:text-base font-medium"
             >
-              Order Food
+              Order Now
             </motion.button>
 
-            {/* Secondary Button */}
             <motion.button
-              whileHover={{ scale: 1.07 }}
+              whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
               className="
-                bg-white dark:bg-transparent 
-                border dark:border-gray-500 
-                dark:text-gray-200
-                px-8 py-3 rounded-full text-lg font-medium
-                shadow hover:shadow-lg transition
-              "
+              border border-black dark:border-gray-400
+              text-black dark:text-gray-200
+              px-7 sm:px-8 py-2.5 sm:py-3 rounded-full
+              shadow hover:shadow-lg transition
+              text-sm sm:text-base"
             >
               View Menu
             </motion.button>
           </div>
-
         </div>
-
-        {/* RIGHT IMAGE with FLOAT ANIMATION */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.9 }}
-          className="relative flex justify-center"
-        >
-          <motion.img
-            src={banner}
-            alt="Healthy Food"
-            animate={{ y: [0, -12, 0] }}
-            transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-            className="
-              rounded-2xl 
-              w-full max-w-lg 
-              drop-shadow-[0_20px_40px_rgba(0,0,0,0.25)]
-              dark:drop-shadow-[0_15px_35px_rgba(255,255,255,0.18)]
-              transition
-            "
-          />
-        </motion.div>
-
       </div>
-    </div>
+    </section>
   );
 }
