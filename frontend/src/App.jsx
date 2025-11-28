@@ -8,15 +8,11 @@ import Footer from "./Components/Footer";
 import OffersBanner from "./Components/OffersBanner";
 import Testimonials from "./Components/Testimonials";
 import ProductGrid from "./Components/ProductGrid";
-<<<<<<< HEAD
 import UserProfile from "./Components/Userprofile";
-=======
->>>>>>> 35e88cef3dc2566821b3bd40097804a3c1f75cca
 // import Login from "./pages/LoginPopup";
 // import Signup from "./pages/SignupPopup";
 
 export default function App() {
-
 
   useEffect(() => {
     const saved = localStorage.getItem("ui-theme");
