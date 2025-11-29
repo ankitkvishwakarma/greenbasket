@@ -3,17 +3,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "../hooks/useFlyToCart";
 import { useNavigate } from "react-router-dom";
 import icon from "../../public/assets/icons/icon.png";
+import { Link } from "react-router-dom";
 
 import PopupCard from "./Popupcard";
 import LoginPopup from "../pages/LoginPopup";
 import SignupPopup from "../pages/SignupPopup";
 
 const MENU_ITEMS = [
-  { id: "menu", label: "Menu" },
-  { id: "about", label: "Vegetable" },
-  { id: "locations", label: "Fruits" },
-  { id: "resources", label: "Blog" },
-  { id: "contact", label: "Contact Us" },
+  { id: "menu", label: "Menu", path: "/" },
+  { id: "about", label: "Vegetable", path: "/vegetables" },
+  { id: "locations", label: "Fruits", path: "/fruits" },
+  { id: "resources", label: "Blog", path: "/blog" },
+  { id: "contact", label: "Contact Us", path: "/contact" },  // 👈 Yahi se navigate hoga
 ];
 
 const SEARCH_DATA = [
@@ -121,12 +122,14 @@ export default function Navbar() {
           {/* MIDDLE MENU */}
           <nav className="hidden md:flex gap-8 items-center">
             {MENU_ITEMS.map((m) => (
-              <span
+              <Link
                 key={m.id}
-                className="cursor-pointer text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+                to={m.path}
+                className="cursor-pointer text-gray-700 dark:text-gray-300 
+                 hover:text-black dark:hover:text-white transition"
               >
                 {m.label}
-              </span>
+              </Link>
             ))}
           </nav>
 

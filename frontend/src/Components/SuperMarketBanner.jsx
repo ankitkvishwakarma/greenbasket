@@ -52,11 +52,6 @@ export default function SuperMarketBanner() {
             Learn the smart way to shop — Save money, pick quality & buy the best.
             Join our live webinar with expert guidance.
           </p>
-
-          <button className="relative mt-4 px-5 py-2 bg-white text-green-700 font-semibold rounded-lg overflow-hidden group">
-            <span className="relative z-10">Join Webinar</span>
-            <span className="absolute inset-0 bg-white/30 left-[-100%] group-hover:left-[120%] duration-700 rotate-12"></span>
-          </button>
         </motion.div>
 
       </div>
