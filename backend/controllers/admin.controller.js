@@ -1,17 +1,19 @@
 import User from "../models/User.js";
 import Product from "../models/Products.js";
 import Order from "../models/Order.js";
+import DeliveryBoy from "../models/DeliveryBoy.js";
 import bcrypt from "bcrypt";
 import { generateAccessToken } from "../utils/generateJwt.js";
 
+
 /* ================================
-    1) Admin Login
+        ADMIN LOGIN
 ================================ */
 export const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await User.findOne({ email, role: "ADMIN" }); // only admin
+    const admin = await User.findOne({ email, role: "ADMIN" });
     if (!admin) return res.status(403).json({ message: "Not authorized" });
 
     const valid = await bcrypt.compare(password, admin.password);
@@ -32,8 +34,52 @@ export const adminLogin = async (req, res) => {
 };
 
 
+
 /* ================================
-    2) Get All Users
+   CREATE DELIVERY BOY ACCOUNT
+================================ */
+export const createDeliveryBoy = async (req, res) => {
+  try {
+    const { name, email, password, phone, vehicleNumber } = req.body;
+
+    // ❗ सही duplicate check User table से होगा (पहले गलत DeliveryBoy पर था)
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: "Email already registered" });
+
+    // 🔥 Password hashing
+    const hashedPass = await bcrypt.hash(password, 10);
+
+    // 1) User login account create
+    const user = await User.create({
+      name,
+      email,
+      phone,
+      password: hashedPass,
+      role: "DELIVERY"
+    });
+
+    // 2) DeliveryBoy profile create
+    await DeliveryBoy.create({
+      userId: user._id,
+      name,
+      phone,
+      email,
+      vehicleNumber,
+      lastKnownLocation: { type: "Point", coordinates: [0, 0] } // default to avoid geo error
+    });
+
+    return res.status(201).json({ message: "Delivery Boy Created Successfully" });
+
+  } catch (err) {
+    console.log("DELIVERY BOY ERROR:", err);
+    return res.status(500).json({ message: "Server Error" });
+  }
+};
+
+
+
+/* ================================
+          GET USERS
 ================================ */
 export const getAllUsers = async (req, res) => {
   try {
@@ -46,8 +92,9 @@ export const getAllUsers = async (req, res) => {
 };
 
 
+
 /* ================================
-    3) Get All Products
+       PRODUCT CONTROL
 ================================ */
 export const getAllProducts = async (req, res) => {
   try {
@@ -59,14 +106,9 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-
-/* ================================
-    4) Add Product
-================================ */
 export const addProduct = async (req, res) => {
   try {
     const product = await Product.create(req.body);
-
     return res.status(201).json({ message: "Product Added", product });
 
   } catch (err) {
@@ -74,10 +116,6 @@ export const addProduct = async (req, res) => {
   }
 };
 
-
-/* ================================
-    5) Delete Product
-================================ */
 export const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -89,12 +127,16 @@ export const deleteProduct = async (req, res) => {
 };
 
 
+
 /* ================================
-    6) Orders Control
+          ORDER CONTROL
 ================================ */
 export const getOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate("user").populate("items.product");
+    const orders = await Order.find()
+      .populate("userId")
+      .populate("items.productId");
+
     return res.status(200).json(orders);
 
   } catch (err) {
@@ -103,9 +145,7 @@ export const getOrders = async (req, res) => {
 };
 
 
-/* ================================
-    7) Update Order Status
-================================ */
+
 export const updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;

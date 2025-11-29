@@ -9,6 +9,8 @@ import OffersBanner from "./Components/OffersBanner";
 import Testimonials from "./Components/Testimonials";
 import ProductGrid from "./Components/ProductGrid";
 import UserProfile from "./Components/Userprofile";
+import SuperMarketBanner from "./Components/SuperMarketBanner";
+import AdvancedBannerSlider from "./Components/AdvancedBannerSlider"
 // import Login from "./pages/LoginPopup";
 // import Signup from "./pages/SignupPopup";
 
@@ -99,7 +101,9 @@ export default function App() {
           <FeaturedCategories />
           <ProductGrid />
           <OffersBanner />
+          <SuperMarketBanner />
           <Testimonials />
+          <AdvancedBannerSlider/>
           <Footer />
         </div>
       </div>

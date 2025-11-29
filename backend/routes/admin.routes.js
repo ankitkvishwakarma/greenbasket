@@ -1,6 +1,8 @@
 import express from "express";
-import { auth } from "../middlewares/auth.middleware.js";
+import { auth, requireRole } from "../middlewares/auth.middleware.js";
+import {createDeliveryBoy, assignDeliveryBoy} from "../controllers/admin.controller.js";
 import { adminOnly } from "../middlewares/auth.middleware.js";
+
 
 import { 
   adminLogin, 
@@ -21,6 +23,8 @@ router.post("/login", adminLogin);
 router.use(auth, adminOnly);
 
 router.get("/users", getAllUsers);
+router.post("/delivery/create", auth, requireRole("ADMIN"), createDeliveryBoy);
+router.post("/assign", assignDeliveryBoy);
 router.get("/products", getAllProducts);
 router.post("/products", addProduct);
 router.delete("/products/:id", deleteProduct);
