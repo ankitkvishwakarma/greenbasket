@@ -1,193 +1,139 @@
 import React, { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function SignupPopup({ switchToLogin }) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPass, setShowPass] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
   const [password, setPassword] = useState("");
-  const [confirmPass, setConfirmPass] = useState("");
+  const [confirm, setConfirm] = useState("");
 
-  const isMatch = password === confirmPass && confirmPass.length > 0;
-  const isError = confirmPass.length > 0 && password !== confirmPass;
+  const isMatch = password === confirm && confirm.length > 0;
+  const isWeak = password.length < 6 && password.length > 0;
 
   return (
-    <>
-      {/* HEADING */}
-      <h2 className="text-3xl font-extrabold text-white mb-8 tracking-wide drop-shadow-lg">
-        Create Account
+    <div className="animate-fadeInSlow">
+
+      {/* Heading */}
+      <h2 className="text-[30px] font-bold text-white text-center mb-6">
+        Create Your Account 🚀
       </h2>
 
-      {/* FULL NAME */}
-      <div className="relative mb-5 group">
-        <input
-          type="text"
-          placeholder=" "
-          className="w-full p-4 rounded-xl bg-white/10 backdrop-blur-md
-            border border-white/20 text-white
-            placeholder-transparent outline-none
-            focus:border-green-400 transition
-            shadow-inner shadow-black/20"
-        />
-        <label
-          className="absolute left-4 top-1/2 -translate-y-1/2
-            text-gray-300 pointer-events-none
-            transition-all duration-200
-            group-focus-within:top-2 
-            group-focus-within:text-green-300 
-            group-focus-within:text-sm"
-        >
-          Full Name
-        </label>
-      </div>
+      <div className="space-y-4">
 
-      {/* EMAIL */}
-      <div className="relative mb-5 group">
-        <input
-          type="email"
-          placeholder=" "
-          className="w-full p-4 rounded-xl bg-white/10 backdrop-blur-md
-            border border-white/20 text-white
-            placeholder-transparent outline-none
-            focus:border-green-400 transition
-            shadow-inner shadow-black/20"
-        />
-        <label
-          className="absolute left-4 top-1/2 -translate-y-1/2
-            text-gray-300 pointer-events-none
-            transition-all duration-200
-            group-focus-within:top-2 
-            group-focus-within:text-green-300 
-            group-focus-within:text-sm"
-        >
-          Email
-        </label>
-      </div>
+        {/* Full Name */}
+        <InputField label="Full Name" type="text" />
 
-      {/* PASSWORD */}
-      <div className="relative mb-5 group">
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder=" "
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={`w-full p-4 pr-12 rounded-xl bg-white/10 backdrop-blur-md 
-            border 
-            ${
-              isError
-                ? "border-red-400"
-                : isMatch
-                ? "border-green-400"
-                : "border-white/20"
+        {/* Email */}
+        <InputField label="Email Address" type="email" />
+
+        {/* Password */}
+        <div className="relative">
+          <InputField
+            label="Password"
+            type={showPass ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            borderColor={
+              isWeak ? "border-red-400" : isMatch ? "border-green-400" : "border-white/25"
             }
-            text-white outline-none
-            placeholder-transparent 
-            focus:border-green-400 transition
-            shadow-inner shadow-black/20`}
-        />
+          />
 
-        {/* FLOATING LABEL */}
-        <label
-          className="absolute left-4 top-1/2 -translate-y-1/2
-            text-gray-300 pointer-events-none
-            transition-all duration-200
-            group-focus-within:top-2 
-            group-focus-within:text-green-300 
-            group-focus-within:text-sm"
-        >
-          Password
-        </label>
+          {/* Show/Hide Button */}
+          <button
+            type="button"
+            onClick={() => setShowPass(!showPass)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-green-300"
+          >
+            {showPass ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
 
-        {/* EYE BUTTON */}
-        <button
-          type="button"
-          onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-4 top-1/2 -translate-y-1/2
-            text-gray-300 hover:text-green-300 transition"
-        >
-          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-        </button>
-      </div>
-
-      {/* CONFIRM PASSWORD */}
-      <div className="relative mb-2 group">
-        <input
-          type={showConfirm ? "text" : "password"}
-          placeholder=" "
-          value={confirmPass}
-          onChange={(e) => setConfirmPass(e.target.value)}
-          className={`w-full p-4 pr-12 rounded-xl bg-white/10 backdrop-blur-md 
-            border 
-            ${
-              isError
-                ? "border-red-400"
-                : isMatch
-                ? "border-green-400"
-                : "border-white/20"
+        {/* Confirm Password */}
+        <div className="relative">
+          <InputField
+            label="Confirm Password"
+            type={showConfirm ? "text" : "password"}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            borderColor={
+              confirm.length > 0
+                ? isMatch
+                  ? "border-green-400"
+                  : "border-red-400"
+                : "border-white/25"
             }
-            text-white outline-none
-            placeholder-transparent 
-            focus:border-green-400 transition
-            shadow-inner shadow-black/20`}
-        />
+          />
 
-        <label
-          className="absolute left-4 top-1/2 -translate-y-1/2
-            text-gray-300 pointer-events-none
-            transition-all duration-200
-            group-focus-within:top-2 
-            group-focus-within:text-green-300 
-            group-focus-within:text-sm"
-        >
-          Confirm Password
-        </label>
+          <button
+            type="button"
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-green-300"
+          >
+            {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
 
-        {/* EYE BUTTON */}
+        {/* Hints — Fast Readable */}
+        {isWeak && (
+          <p className="flex items-center gap-1 text-xs text-red-400">
+            <AlertCircle size={14}/> Minimum 6 characters required
+          </p>
+        )}
+
+        {confirm.length > 0 && isMatch && (
+          <p className="flex items-center gap-1 text-xs text-green-300">
+            <CheckCircle size={14}/> Passwords match
+          </p>
+        )}
+
+        {/* Signup Button */}
         <button
-          type="button"
-          onClick={() => setShowConfirm(!showConfirm)}
-          className="absolute right-4 top-1/2 -translate-y-1/2
-            text-gray-300 hover:text-green-300 transition"
+          disabled={!isMatch || isWeak}
+          className="
+            mt-2 w-full py-3 rounded-xl font-semibold text-black text-[17px]
+            bg-gradient-to-r from-lime-400 to-green-500
+            hover:scale-[1.02] active:scale-[0.98]
+            transition-all duration-300 shadow-[0_0_28px_#00ff8875]
+            disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100
+          "
         >
-          {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+          Sign Up
         </button>
+
+        {/* Switch to Login */}
+        <p className="text-gray-300 text-sm text-center pt-2">
+          Already have an account?
+          <span
+            onClick={switchToLogin}
+            className="text-green-300 font-medium ml-1 hover:text-green-400 cursor-pointer"
+          >Login</span>
+        </p>
       </div>
+    </div>
+  );
+}
 
-      {/* MATCHING MESSAGE */}
-      {isError && (
-        <p className="text-red-400 text-xs mb-4">Passwords do not match</p>
-      )}
-
-      {isMatch && (
-        <p className="text-green-300 text-xs mb-4">Passwords match ✓</p>
-      )}
-
-      {/* SIGNUP BUTTON */}
-      <button
-        disabled={!isMatch}
-        className="
-          relative w-full py-3.5 rounded-xl font-semibold text-black
-          bg-gradient-to-r from-lime-400 to-green-500
-          shadow-[0_0_25px_rgba(0,255,140,0.5)]
-          hover:shadow-[0_0_35px_rgba(0,255,160,0.8)]
-          transition-all duration-300 overflow-hidden
-          hover:-translate-y-0.5
-          disabled:opacity-40 disabled:cursor-not-allowed
-        "
-      >
-        Signup
-      </button>
-
-      {/* SWITCH TO LOGIN */}
-      <p className="text-gray-300 text-sm text-center mt-6">
-        Already have an account?{" "}
-        <button
-          onClick={switchToLogin}
-          className="text-green-300 underline hover:text-green-400 transition"
-        >
-          Login
-        </button>
-      </p>
-    </>
+/* 🔽 Reusable Input Component — cleaner UI */
+function InputField({ label, type, value, onChange, borderColor }) {
+  return (
+    <div className="relative group">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        className={`w-full p-4 rounded-xl bg-white/10 text-white outline-none
+          placeholder-transparent backdrop-blur-md shadow-inner shadow-black/30
+          border ${borderColor || "border-white/25"}
+          focus:border-green-400 transition
+        `}
+        placeholder=" "
+      />
+      <label className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300
+        pointer-events-none transition-all duration-200
+        group-focus-within:top-2 group-focus-within:text-green-300 group-focus-within:text-xs">
+        {label}
+      </label>
+    </div>
   );
 }
