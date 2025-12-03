@@ -1,6 +1,15 @@
+/* ==============================
+   1. Tailwind Core Injection
+   ============================== */
 @import "tailwindcss";
 
-/* smooth theme transitions */
+/* Tell Tailwind which files to scan (Vite v4 Required) */
+@source "./src/**/*.{js,jsx,ts,tsx}";
+
+
+/* ==============================
+   2. Global Theme Styling
+   ============================== */
 :root {
     --bg: #ffffff;
     --text: #111827;
@@ -9,27 +18,58 @@
 
 .dark {
     --bg: #0b1220;
-    /* Soft black */
     --text: #f1f5f9;
     --muted: #9ca3af;
 }
 
-html,
-body,
-#root {
+html, body, #root {
     height: 100%;
     background-color: var(--bg);
     color: var(--text);
     transition: background-color 250ms ease, color 250ms ease;
 }
 
-/* Optional: utility for glass in dark mode */
+
+/* ==============================
+   3. Optional Glass UI
+   ============================== */
 .bg-glass {
     background-color: rgba(255, 255, 255, 0.14);
     backdrop-filter: blur(10px) saturate(120%);
 }
-
 .dark .bg-glass {
     background-color: rgba(10, 12, 20, 0.36);
+}
+
+
+/* ==============================
+   4. Tailwind Custom Utilities
+   ============================== */
+@layer components {
+    .inputAuth {
+        @apply w-full border border-blue-400 px-3 py-2 rounded-md mb-3 
+               focus:ring-2 focus:ring-blue-500;
+    }
+    .btnBlue {
+        @apply bg-blue-600 text-white font-semibold py-2 rounded-md
+               hover:bg-blue-700 transition;
+    }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slideUp {
+  animation: slideUp 0.35s ease-out;
+}
+
+@keyframes progressAnim {
+  from { width: 0%; }
+}
+
+.animate-progress {
+  animation: progressAnim 1s ease-out forwards;
 }
 

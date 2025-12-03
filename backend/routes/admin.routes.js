@@ -1,9 +1,5 @@
 import express from "express";
 import { auth, requireRole } from "../middlewares/auth.middleware.js";
-import {createDeliveryBoy, assignDeliveryBoy} from "../controllers/admin.controller.js";
-import { adminOnly } from "../middlewares/auth.middleware.js";
-
-
 import { 
   adminLogin, 
   getAllUsers, 
@@ -11,24 +7,36 @@ import {
   addProduct,
   deleteProduct,
   getOrders,
-  updateOrderStatus
+  updateOrderStatus,
+  createDeliveryBoy,
+  assignDeliveryBoy     // ✔ now perfect
 } from "../controllers/admin.controller.js";
+
+import { adminOnly } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // Public → Admin Login
 router.post("/login", adminLogin);
 
-// Protected → Only Admin can access
+// Protected → Only Admin
 router.use(auth, adminOnly);
 
+// Users
 router.get("/users", getAllUsers);
-router.post("/delivery/create", auth, requireRole("ADMIN"), createDeliveryBoy);
-router.post("/assign", assignDeliveryBoy);
+
+// Delivery Boy Create
+router.post("/delivery/create", requireRole("ADMIN"), createDeliveryBoy);
+
+// Delivery Assign (FIXED: use params)
+router.post("/assign/:orderId", assignDeliveryBoy);
+
+// Products
 router.get("/products", getAllProducts);
 router.post("/products", addProduct);
 router.delete("/products/:id", deleteProduct);
 
+// Orders
 router.get("/orders", getOrders);
 router.put("/orders/:id", updateOrderStatus);
 

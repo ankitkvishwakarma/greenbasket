@@ -1,85 +1,133 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
+/******** USER UI ********/
 import Navbar from "./Components/Navbar";
+import Footer from "./Components/Footer";
 import HeroSection from "./Components/HeroSection";
 import FeaturedCategories from "./Components/FeaturedCategories";
-import Footer from "./Components/Footer";
-import OffersBanner from "./Components/OffersBanner";
-import Testimonials from "./Components/Testimonials";
 import ProductGrid from "./Components/ProductGrid";
-import UserProfile from "./Components/Userprofile";
+import OffersBanner from "./Components/OffersBanner";
 import SuperMarketBanner from "./Components/SuperMarketBanner";
+import Testimonials from "./Components/Testimonials";
 import AdvancedBannerSlider from "./Components/AdvancedBannerSlider";
 import ContactUs from "./Components/ContactUs";
 import BlogSection from "./Components/Blogs";
-import VegetablesPage from "./Components/VegetablesPage"; 
+import VegetablesPage from "./Components/VegetablesPage";
 import FruitsPage from "./Components/FruitsPage";
+import UserProfile from "./Components/Userprofile";
+import Success from "./Components/Auth/Success";
+
+/******** AUTH SCREENS ********/
+import Login from "./Components/Auth/Login";
+import Signup from "./Components/Auth/Signup";
+import ForgotPassword from "./Components/Auth/ForgotPassword";
+import AdminLogin from "./Components/Auth/AdminLogin";
+
+/******** SECURITY MIDDLEWARE ********/
+import ProtectedRoute from "./Components/Auth/ProtectedRoute";
+import AdminRoute from "./Components/Auth/AdminRoute";
+
+/******** ADMIN PAGES ********/
+import AdminDashboard from "./Components/Admin/AdminDashboard";
+import ManageProducts from "./Components/Admin/ManageProducts";
+import AddProduct from "./Components/Admin/AddProduct";
+import EditProduct from "./Components/Admin/EditProduct";
+import Orders from "./Components/Admin/Orders";
+import AdminSales from "./Components/Admin/AdminSales";
+import DeliveryBoyList from "./Components/Admin/DeliveryBoyList";
+import AddDeliveryBoy from "./Components/Admin/AddDeliveryBoy";
+import AssignOrder from "./Components/Admin/AssignOrder";
+import DeliveryHistory from "./Components/Admin/DeliveryHistory";
+import DeliveryMap from "./Components/Admin/DeliveryMap";
+import RatingsSalary from "./Components/Admin/RatingsSalary";
+import AssignOrderModal from "./Components/Admin/AssignOrderModal";
+
+
+
+
+/******** HIDE NAV+FOOTER ********/
+function LayoutControl({ children }) {
+  const { pathname } = useLocation();
+
+  // JIN ROUTES PAR NAVBAR/FOOTER HIDE HOGA 👇
+  const AUTH_PAGES = ["/login", "/signup", "/forgot", "/admin/login"];
+  const isAdmin = pathname.startsWith("/admin");  // FULL ADMIN UI HIDE
+
+  const hideUI = AUTH_PAGES.includes(pathname) || isAdmin;
+
+  return (
+    <>
+      {!hideUI && <Navbar />}
+      {children}
+      {!hideUI && <Footer />}
+    </>
+  );
+}
 
 
 export default function App() {
 
-  /* 🌙 THEME FETCH ON LOAD */
   useEffect(() => {
-    const saved = localStorage.getItem("ui-theme");
-    saved === "dark"
-      ? document.documentElement.classList.add("dark")
-      : document.documentElement.classList.remove("dark");
+    document.documentElement.classList.toggle("dark", localStorage.getItem("ui-theme") === "dark");
   }, []);
-
 
   return (
     <BrowserRouter>
+      <LayoutControl>
 
-      {/* 🔥 GLOBAL FULL APP BACKGROUND */}
-      <div className="min-h-screen relative overflow-hidden bg-[#e5f7ee] dark:bg-[#05070c] transition-all">
+        <Routes>
 
-        {/* 🔥 GLOW EFFECTS — visible on every page */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-20 -left-20 w-[350px] h-[350px] bg-green-300 dark:bg-green-500 opacity-40 dark:opacity-10 blur-[120px] rounded-full animate-pulse" />
-          <div className="absolute -top-10 right-0 w-[280px] h-[280px] bg-yellow-300 dark:bg-yellow-600 opacity-30 dark:opacity-10 blur-[130px] rounded-full animate-pulse" />
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-green-400 dark:bg-blue-700 opacity-30 dark:opacity-20 blur-[150px] rounded-full animate-bounce" />
-        </div>
+          {/* 🔐 AUTH SCREENS */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/signup-success" element={<Success />} />
+          <Route path="/forgot" element={<ForgotPassword />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+
+          {/* 🏠 HOME */}
+          <Route path="/" element={
+            <>
+              <HeroSection />
+              <FeaturedCategories />
+              <ProductGrid />
+              <OffersBanner />
+              <SuperMarketBanner />
+              <Testimonials />
+              <AdvancedBannerSlider />
+            </>
+          } />
+
+          {/* 🌍 PUBLIC */}
+          <Route path="/vegetables" element={<VegetablesPage />} />
+          <Route path="/fruits" element={<FruitsPage />} />
+          <Route path="/blog" element={<BlogSection />} />
+          <Route path="/contact" element={<ContactUs />} />
+
+          {/* 👤 USER PROTECTED */}
+
+          <Route path="/userprofile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+          
+
+          {/* 🛡 ADMIN PROTECTED */}
+          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/products" element={<AdminRoute><ManageProducts /></AdminRoute>} />
+          <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
+          <Route path="/admin/edit/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
+          <Route path="/admin/delivery/:id/history" element={<AdminRoute><DeliveryHistory /></AdminRoute>} />
+          <Route path="/admin/delivery/assign/:id" element={<AdminRoute><AssignOrderModal /></AdminRoute>} />
+          <Route path="/admin/delivery/:id/map" element={<AdminRoute><DeliveryMap /></AdminRoute>} />
+          <Route path="/admin/delivery/:id/pay" element={<AdminRoute><RatingsSalary /></AdminRoute>} />
+          <Route path="/admin/orders" element={<AdminRoute><Orders /></AdminRoute>} />
+          <Route path="/admin/sales" element={<AdminRoute><AdminSales /></AdminRoute>} />
+          <Route path="/admin/delivery" element={<AdminRoute><DeliveryBoyList /></AdminRoute>} />
+          <Route path="/admin/delivery/add" element={<AdminRoute><AddDeliveryBoy /></AdminRoute>} />
+          <Route path="/admin/delivery/assign/:id" element={<AdminRoute><AssignOrder /></AdminRoute>} />
 
 
-        {/* 🔥 MAIN CARD UI WRAPPER (Navbar + Content + Footer inside) */}
-        <div className="min-h-screen rounded-3xl shadow-2xl mx-4 mt-4 mb-4 overflow-hidden relative z-10">
+        </Routes>
 
-          {/* ⬅ ALWAYS VISIBLE NAVBAR */}
-          <Navbar />
-
-
-          {/* 🔄 Page Switching here only */}
-          <Routes>
-
-            {/* 🏠 HOME PAGE SELECTED */}
-            <Route path="/" element={
-              <>
-                <HeroSection />
-                <FeaturedCategories />
-                <ProductGrid />
-                <OffersBanner />
-                <SuperMarketBanner />
-                <Testimonials />
-                <AdvancedBannerSlider />
-              </>
-            } />
-
-            {/* 📄 INDIVIDUAL PAGES */}
-            <Route path="/vegetables" element={<VegetablesPage />} />
-            <Route path="/fruits" element={<FruitsPage />} />
-            <Route path="/userprofile" element={<UserProfile />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="/blog" element={<BlogSection />} />
-
-          </Routes>
-
-
-          {/* ⬇ ALWAYS VISIBLE FOOTER */}
-          <Footer />
-
-        </div>
-      </div>
+      </LayoutControl>
     </BrowserRouter>
   );
 }

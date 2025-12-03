@@ -1,43 +1,59 @@
 import { useEffect, useState } from "react";
 
 export default function Testimonials() {
-
   const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/testimonials") // API Call
-      .then(res => res.json())
-      .then(data => setTestimonials(data));
+    async function loadTestimonials() {
+      try {
+        const res = await fetch("http://localhost:5000/api/testimonials");
+
+        // If API not found → avoid crash
+        if (!res.ok) {
+          console.warn("Testimonials API returned:", res.status);
+          setTestimonials([]);
+          setLoading(false);
+          return;
+        }
+
+        // Safe JSON parsing
+        const data = await res.json();
+        setTestimonials(data);
+      } catch (err) {
+        console.error("Testimonials Fetch Error:", err);
+        setTestimonials([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTestimonials();
   }, []);
 
-  return (
-    <div className="px-8 md:px-20 py-16 text-center">
-      
-      <h2 className="text-3xl font-bold dark:text-white">What Our Customers Say</h2>
-      <p className="text-gray-500 dark:text-gray-300 mt-2">
-        Trusted by {testimonials.length}+ users
-      </p>
+  if (loading) return <div className="text-center py-4">Loading...</div>;
 
-      {testimonials.length > 0 ? (
-        <div className="mt-10 space-y-6 max-w-3xl mx-auto">
-          
+  return (
+    <div className="max-w-3xl mx-auto my-10">
+      <h2 className="text-2xl font-bold text-center mb-6">What Our Customers Say</h2>
+
+      {testimonials.length === 0 ? (
+        <p className="text-center text-gray-500">No testimonials available.</p>
+      ) : (
+        <div className="grid gap-4">
           {testimonials.map((item) => (
-            <div 
-              key={item._id}
-              className="bg-white dark:bg-[#111827] rounded-3xl p-8 shadow-lg"
+            <div
+              key={item.id}
+              className="p-4 rounded-xl shadow bg-white border"
             >
-              <p className="text-lg dark:text-gray-200">“{item.message}”</p>
-              <h4 className="mt-4 font-bold text-green-600 dark:text-green-300">
+              <p className="text-gray-700 text-lg">“{item.message}”</p>
+              <p className="mt-2 text-sm font-semibold text-blue-600">
                 — {item.name}
-              </h4>
+              </p>
             </div>
           ))}
-
         </div>
-      ) : (
-        <p className="mt-6 text-gray-500 dark:text-gray-400">Loading...</p>
       )}
-
     </div>
   );
 }
