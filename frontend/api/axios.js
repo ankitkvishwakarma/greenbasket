@@ -1,13 +1,13 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",   // backend base url
+  baseURL: import.meta.env.VITE_BACKEND_URL + "/api", 
   withCredentials: true,
 });
 
 // Auto attach JWT token
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");  // FLEX: use correct key
+  const token = localStorage.getItem("token");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
