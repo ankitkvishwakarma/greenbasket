@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import AuthLayout from "./AuthLayout";
+import API from "../../../api/axios";   // ⭐ axios instance import
 
 export default function Login() {
 
@@ -11,19 +12,9 @@ export default function Login() {
 
   async function submitLogin() {
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const { data } = await API.post("/auth/login", { email, password });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Invalid Credentials");
-        return;
-      }
-
+      // SAVE DETAILS
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("loggedIn", "true");
@@ -38,9 +29,9 @@ export default function Login() {
 
       window.location.reload();
 
-    } catch (error) {
-      console.error("Login Error:", error);
-      alert("Something went wrong!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Invalid Credentials ❌");
+      console.log("Login Error:", err);
     }
   }
 
@@ -73,7 +64,7 @@ export default function Login() {
         </Link>
       </p>
 
-      {/* ⭐ ADD ADMIN LOGIN LINK HERE ⭐ */}
+      {/* ⭐ ADMIN LOGIN LINK ⭐ */}
       <p className="text-sm mt-2 text-center">
         Admin Login?
         <Link to="/admin/login" className="text-red-600 font-semibold ml-1">

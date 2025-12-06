@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API from "../../api/axios";   // ⭐ axios instance import
 
 export default function FruitsPage() {
 
@@ -6,20 +7,20 @@ export default function FruitsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔥 Fetch data from backend (fruits only route)
+  // 🔥 Fetch data from backend (only fruits)
   useEffect(() => {
-    fetch("http://localhost:5000/api/products/fruits")  // ← backend endpoint
-      .then(res => res.json())
-      .then(data => {
+    async function loadFruits() {
+      try {
+        const { data } = await API.get("/products/fruits");
         setFruits(data);
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch (err) {
         setError("Failed to load fruits data ❌");
+      } finally {
         setLoading(false);
-      });
+      }
+    }
+    loadFruits();
   }, []);
-
 
   return (
     <div className="px-6 md:px-20 py-16">
@@ -31,29 +32,25 @@ export default function FruitsPage() {
         Handpicked natural sweetness — Healthy, Organic & Farm Fresh 🍃
       </p>
 
-      {/* ⏳ Loading Spinner */}
+      {/* ⏳ Loading */}
       {loading && (
         <div className="flex justify-center mt-14">
           <div className="w-10 h-10 border-4 border-orange-400 border-t-transparent animate-spin rounded-full" />
         </div>
       )}
 
-      {/* ❌ If failed */}
+      {/* ❌ Error Text */}
       {error && <p className="text-red-500 text-center mt-10">{error}</p>}
 
-
-      {/* 🟢 Products Grid */}
+      {/* 🟢 Fruits Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
-
         {fruits.map((item) => (
-          <div 
+          <div
             key={item._id}
-            className="bg-white dark:bg-[#0f1218] p-4 rounded-2xl
-                       shadow hover:scale-[1.03] duration-300 cursor-pointer"
+            className="bg-white dark:bg-[#0f1218] p-4 rounded-2xl shadow hover:scale-[1.03] duration-300 cursor-pointer"
           >
-
-            <img 
-              src={item.image} 
+            <img
+              src={item.image}
               alt={item.name}
               className="w-full h-40 object-cover rounded-xl"
             />
@@ -66,14 +63,11 @@ export default function FruitsPage() {
               ₹{item.price} / {item.unit}
             </p>
 
-            <button className="w-full mt-4 py-2 bg-orange-500 text-white
-                               rounded-xl font-semibold hover:bg-orange-600">
+            <button className="w-full mt-4 py-2 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600">
               Add to Cart 🛒
             </button>
-
           </div>
         ))}
-
       </div>
     </div>
   );

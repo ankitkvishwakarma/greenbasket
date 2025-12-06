@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import API from "../../api/axios";   // ⭐ axios instance import
+import { addToCart } from "../utils/Cart";
 
 export default function VegetablesPage() {
 
@@ -6,49 +8,45 @@ export default function VegetablesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // 🔥 Backend se data fetch
   useEffect(() => {
-    fetch("http://localhost:5000/api/products/vegetables")  // ← future backend route
-      .then(res => res.json())
-      .then(data => {
+    async function loadVegetables() {
+      try {
+        const { data } = await API.get("/products/vegetables");
         setProducts(data);
+      } catch (err) {
+        setError("Failed to load products ❌");
+      } finally {
         setLoading(false);
-      })
-      .catch(err => {
-        setError("Failed to load products");
-        setLoading(false);
-      });
+      }
+    }
+
+    loadVegetables();
   }, []);
 
   return (
     <div className="px-6 md:px-20 py-16">
 
-      <h1 className="text-3xl md:text-4xl font-bold text-green-600">
+      <h1 className="text-3xl font-bold text-green-600">
         Fresh Vegetables 🥬
       </h1>
-      <p className="text-gray-500 mt-2">
-        Straight from the farm to your home — 100% Organic 🌱
-      </p>
 
-
-      {/* ⏳ Loader */}
+      {/* Loading Spinner */}
       {loading && (
         <div className="flex justify-center mt-14">
           <div className="w-10 h-10 border-4 border-green-400 border-t-transparent animate-spin rounded-full"></div>
         </div>
       )}
 
-      {/* ❌ Error */}
+      {/* Error Message */}
       {error && <p className="text-red-500 text-center mt-10">{error}</p>}
 
-
-      {/* 🟢 Product Grid */}
+      {/* Products Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 mt-10">
 
         {products.map(item => (
           <div
             key={item._id}
-            className="bg-white dark:bg-[#0f1218] p-4 rounded-2xl shadow hover:scale-[1.03] transition cursor-pointer"
+            className="bg-white dark:bg-[#0f1218] p-4 rounded-2xl shadow"
           >
             <img
               src={item.image}
@@ -56,7 +54,7 @@ export default function VegetablesPage() {
               className="w-full h-40 object-cover rounded-lg"
             />
 
-            <h2 className="mt-3 font-semibold text-lg text-gray-900 dark:text-gray-200">
+            <h2 className="mt-3 font-semibold text-lg">
               {item.name}
             </h2>
 
@@ -64,11 +62,15 @@ export default function VegetablesPage() {
               ₹{item.price} / {item.unit}
             </p>
 
-            <button className="w-full mt-4 bg-green-500 text-white py-2 rounded-xl font-semibold hover:bg-green-600 transition">
+            <button
+              onClick={() => addToCart(item)}
+              className="w-full mt-4 bg-green-500 text-white py-2 rounded-xl"
+            >
               Add to Cart 🛒
             </button>
           </div>
         ))}
+
       </div>
     </div>
   );

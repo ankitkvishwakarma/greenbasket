@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import AuthLayout from "./AuthLayout";
+import API from "../../../api/axios";   // ⭐ axios instance import
 
 export default function AdminLogin(){
 
@@ -10,35 +11,23 @@ export default function AdminLogin(){
 
   async function loginAdmin(){
     try{
-      const res = await fetch("http://localhost:5000/api/admin/login",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify({ email, password })
-      });
+      const { data } = await API.post("/admin/login", { email, password });
 
-      const data = await res.json();
+      // SAVE TOKEN
+      localStorage.setItem("token", data.token);
 
-      if(res.ok){
+      // SAVE ADMIN INFO
+      localStorage.setItem("user", JSON.stringify(data.admin));
 
-        // SAVE TOKEN
-        localStorage.setItem("token", data.token);
+      // MOST IMPORTANT ❗
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("role", "ADMIN");
 
-        // SAVE ADMIN INFO
-        localStorage.setItem("user", JSON.stringify(data.admin));
-
-        // MOST IMPORTANT ❗
-        localStorage.setItem("loggedIn", "true");
-        localStorage.setItem("role", "ADMIN");
-
-        navigate("/admin/dashboard", { replace: true });
-        window.location.reload();
-      }
-      else{
-        alert(data.message || "Invalid admin credentials ❌");
-      }
+      navigate("/admin/dashboard", { replace: true });
+      window.location.reload();
     }
     catch(err){
-      alert("Server error!");
+      alert(err.response?.data?.message || "Invalid admin credentials ❌");
       console.log(err);
     }
   }
