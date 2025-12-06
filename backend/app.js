@@ -23,10 +23,18 @@ dotenv.config();
 const app = express();
 
 // --------- CORS FIX --------------
-app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",                 // local frontend (development)
+      process.env.FRONTEND_URL                // production frontend (vercel)
+    ],
     credentials: true,
-}));
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use(helmet());
 app.use(morgan("dev"));
