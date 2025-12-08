@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from "path";
+import fileUpload from "express-fileupload";   // ⭐ MUST ADD THIS
 
 // ROUTES
 import uploadRoutes from "./routes/upload.routes.js";
@@ -23,29 +24,36 @@ dotenv.config();
 const app = express();
 
 // --------- CORS FIX --------------
-
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",                 // local frontend (development)
-      process.env.FRONTEND_URL                // production frontend (vercel)
+      "http://localhost:5173",
+      process.env.FRONTEND_URL
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
-   
+
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
 
+// ⭐⭐ EXPRESS FILEUPLOAD — MOST IMPORTANT ⭐⭐
+app.use(
+  fileUpload({
+    useTempFiles: false,
+    createParentPath: true,
+  })
+);
+
 // --------- STATIC UPLOADS ----------
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 // --------- ROUTES ----------
-app.use("/api/upload", uploadRoutes); // upload first
+app.use("/api/upload", uploadRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);

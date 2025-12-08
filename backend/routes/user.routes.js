@@ -1,5 +1,6 @@
 import express from "express";
 import { auth } from "../middlewares/auth.middleware.js";
+
 import {
   getProfile,
   updateProfile,
@@ -7,18 +8,22 @@ import {
   addAddress,
   updateAddress,
   deleteAddress,
+  updateAvatar
 } from "../controllers/user.controller.js";
 
 const router = express.Router();
 
-router.use(auth);
+// PROFILE
+router.get("/me", auth, getProfile);
+router.put("/me", auth, updateProfile);
 
-router.get("/me", getProfile);
-router.put("/me", updateProfile);
+// UPDATE ONLY AVATAR
+router.put("/me/avatar", auth, updateAvatar);
 
-router.get("/addresses", getAddresses);
-router.post("/addresses", addAddress);
-router.put("/addresses/:id", updateAddress);
-router.delete("/addresses/:id", deleteAddress);
+// ADDRESS
+router.get("/addresses", auth, getAddresses);
+router.post("/addresses", auth, addAddress);
+router.put("/addresses/:id", auth, updateAddress);
+router.delete("/addresses/:id", auth, deleteAddress);
 
 export default router;

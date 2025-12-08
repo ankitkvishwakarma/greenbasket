@@ -1,23 +1,27 @@
-// backend/routes/product.routes.js
 import express from "express";
-import { auth, requireRole } from "../middlewares/auth.middleware.js";
 import {
+  createProduct,
   getProducts,
   getProductById,
-  createProduct,
   updateProduct,
   deleteProduct
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
 
-// PUBLIC
+// CREATE PRODUCT
+router.post("/", createProduct);
+
+// GET ALL PRODUCTS
 router.get("/", getProducts);
+
+// GET SINGLE PRODUCT
 router.get("/:id", getProductById);
 
-// ADMIN ONLY
-router.post("/create", auth, requireRole("ADMIN"), createProduct);
-router.put("/:id", auth, requireRole("ADMIN"), updateProduct);
-router.delete("/:id", auth, requireRole("ADMIN"), deleteProduct);
+// UPDATE PRODUCT
+router.put("/:id", updateProduct);
+
+// DELETE PRODUCT
+router.delete("/:id", deleteProduct);
 
 export default router;

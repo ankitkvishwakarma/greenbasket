@@ -1,88 +1,51 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pencil, Save, Camera } from "lucide-react";
+import API from "../../api/axios";
+import { Link } from "react-router-dom";
+import { addToCart } from "../utils/Cart";
 
-/* --------------------------------------------------------
-   TRACK ORDER POPUP (ANIMATED BOTTOM SHEET)
---------------------------------------------------------- */
 function OrderTrackModal({ order, onClose }) {
   if (!order) return null;
 
-  const steps = ["Order Placed", "Packed", "Shipped", "Out for Delivery", "Delivered"];
-
-  const currentStep =
-    order.status === "Delivered"
-      ? 5
-      : order.status === "Out for Delivery"
-      ? 4
-      : order.status === "Shipped"
-      ? 3
-      : order.status === "Packed"
-      ? 2
-      : 1;
+  const steps = ["PENDING", "PACKED", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED"];
+  const currentStep = steps.indexOf(order.status.toUpperCase()) + 1;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-end z-50">
-      <div
-        className="
-          w-full max-w-2xl
-          bg-white dark:bg-[#0e1628]
-          rounded-t-xl
-          shadow-2xl p-6
-          animate-slideUp
-          border-t border-white/40 dark:border-white/10
-        "
-      >
-        <h2 className="text-2xl font-semibold text-center text-gray-800 dark:text-gray-200 mb-2">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-md flex justify-center items-end z-50">
+      <div className="w-full max-w-2xl bg-white dark:bg-[#0e1628] rounded-t-xl shadow-xl p-6">
+        <h2 className="text-xl font-semibold mb-3 text-center text-gray-900 dark:text-gray-100">
           Order Tracking
         </h2>
 
-        <p className="text-gray-600 dark:text-gray-300 text-center mb-6 text-sm">
-          Order ID: <span className="font-semibold">{order.id}</span>
+        <p className="text-gray-600 dark:text-gray-300 text-center mb-5 text-sm">
+          Order ID: {order._id}
         </p>
 
-        {/* Progress Bar */}
-        <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-8 overflow-hidden">
+        <div className="w-full bg-gray-300 dark:bg-gray-700 h-2 rounded-full mb-8">
           <div
-            className="h-full bg-green-600 animate-progress"
+            className="h-full bg-green-600 rounded-full"
             style={{ width: `${(currentStep / 5) * 100}%` }}
           ></div>
         </div>
 
-        {/* Steps */}
-        <div className="relative border-l-2 border-green-500 ml-4 pl-4">
-          {steps.map((step, i) => (
+        {steps.map((step, i) => (
+          <div key={i} className="flex items-center gap-3 mb-4">
             <div
-              key={i}
-              className={`mb-6 transition-all duration-500 ${
-                i + 1 <= currentStep ? "opacity-100" : "opacity-40"
+              className={`w-4 h-4 rounded-full ${i < currentStep ? "bg-green-600" : "bg-gray-400"}`}
+            ></div>
+            <p
+              className={`font-medium ${
+                i < currentStep ? "text-green-600" : "text-gray-500 dark:text-gray-400"
               }`}
             >
-              <div
-                className={`w-4 h-4 rounded-full absolute -left-[9px] ${
-                  i + 1 <= currentStep ? "bg-green-600" : "bg-gray-300 dark:bg-gray-700"
-                }`}
-              ></div>
-
-              <p
-                className={`font-medium ${
-                  i + 1 <= currentStep
-                    ? "text-green-700 dark:text-green-400"
-                    : "text-gray-500 dark:text-gray-400"
-                }`}
-              >
-                {step}
-              </p>
-
-              {i + 1 === currentStep && (
-                <p className="text-xs text-green-600 animate-pulse">In Progress...</p>
-              )}
-            </div>
-          ))}
-        </div>
+              {step.replace("_", " ")}
+            </p>
+          </div>
+        ))}
 
         <button
           onClick={onClose}
-          className="mt-4 w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-semibold transition"
+          className="w-full bg-red-500 hover:bg-red-600 text-white mt-5 py-2 rounded-lg"
         >
           Close
         </button>
@@ -91,304 +54,375 @@ function OrderTrackModal({ order, onClose }) {
   );
 }
 
-/* --------------------------------------------------------
-   MAIN USER PROFILE PAGE (FINAL VERSION)
---------------------------------------------------------- */
 export default function UserProfile() {
+  const [activeTab, setActiveTab] = useState("Profile");
   const [editMode, setEditMode] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  const dummyUser = {
-    name: "Ankit Kumar",
-    email: "ankit@gmail.com",
-    phone: "9876543210",
-    address: "Delhi, India",
-    profilePic: "",
-  };
-
-  const [user, setUser] = useState(dummyUser);
+  const [user, setUser] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [wishlist, setWishlist] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
+  const [saving, setSaving] = useState(false);
+
+  // Address Form
+  const [addressForm, setAddressForm] = useState({
+    label: "",
+    fullAddress: "",
+    phone: "",
+  });
+
   const TABS = ["Profile", "Orders", "Wishlist", "Notifications"];
-  const [activeTab, setActiveTab] = useState("Profile");
 
-  const dummyOrders = [
-    { id: "ORD12345", date: "02 Feb 2025", items: ["Tomato", "Milk", "Potato"], amount: 260, status: "Delivered" },
-    { id: "ORD76543", date: "28 Jan 2025", items: ["Onion", "Bread"], amount: 140, status: "Shipped" },
-  ];
+  // LOAD USER
+  async function loadUser() {
+    const { data } = await API.get("/user/me");
+    setUser(data.user);
+  }
 
-  const dummyWishlist = [
-    { id: 1, name: "Fresh Mango", price: 120 },
-    { id: 2, name: "Organic Apple", price: 180 },
-  ];
+  async function loadOrders() {
+    const { data } = await API.get("/orders/my");
+    setOrders(data.orders || []);
+  }
 
-  const dummyNotifications = [
-    "Your order ORD12345 has been delivered!",
-    "20% OFF on Fresho Vegetables.",
-    "Your wishlist item 'Apple' is now in stock.",
-  ];
+  async function loadWishlist() {
+    try {
+      const { data } = await API.get("/wishlist");
+      setWishlist(data.wishlist || []);
+    } catch {
+      const local = JSON.parse(localStorage.getItem("wishlist") || "[]");
+      setWishlist(local);
+    }
+  }
 
-  const handleChange = (e) => setUser({ ...user, [e.target.name]: e.target.value });
+  async function loadNotifications() {
+    try {
+      const { data } = await API.get("/notifications");
+      setNotifications(data.list || []);
+    } catch {
+      setNotifications([]);
+    }
+  }
 
-  const handlePhoto = (e) => {
+  useEffect(() => {
+    loadUser();
+    loadOrders();
+    loadWishlist();
+    loadNotifications();
+  }, []);
+
+  if (!user)
+    return <div className="pt-32 text-center text-gray-700 dark:text-gray-300">Loading profile...</div>;
+
+  // SAVE PROFILE (name, phone, avatar, addresses)
+  async function saveProfile() {
+    try {
+      setSaving(true);
+
+      const form = new FormData();
+      form.append("name", user.name);
+      form.append("phone", user.phone);
+
+      if (user.avatarFile) form.append("avatar", user.avatarFile);
+
+      form.append("addresses", JSON.stringify(user.addresses || []));
+
+      const { data } = await API.put("/user/me", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setUser(data.user);
+      setEditMode(false);
+    } catch (err) {
+      alert("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Avatar upload handler
+  function handleAvatarUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const preview = URL.createObjectURL(file);
-    setUser((u) => ({ ...u, profilePic: preview }));
-  };
 
-  const saveProfile = () => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
-      setEditMode(false);
-      alert("Profile Saved!");
-    }, 800);
-  };
+    setUser({
+      ...user,
+      avatarFile: file,
+      avatar: URL.createObjectURL(file),
+    });
+  }
+
+  // ADD ADDRESS (Direct Input Form)
+  async function saveAddress() {
+    if (!addressForm.label || !addressForm.fullAddress || !addressForm.phone) {
+      return alert("Please fill all address fields");
+    }
+
+    const updated = [...(user.addresses || []), addressForm];
+
+    setUser({ ...user, addresses: updated });
+
+    const form = new FormData();
+    form.append("name", user.name);
+    form.append("phone", user.phone);
+    form.append("addresses", JSON.stringify(updated));
+
+    await API.put("/user/me", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+
+    setAddressForm({ label: "", fullAddress: "", phone: "" });
+  }
+
+  // DELETE ADDRESS
+  async function deleteAddress(index) {
+    const updated = user.addresses.filter((_, i) => i !== index);
+    setUser({ ...user, addresses: updated });
+
+    const form = new FormData();
+    form.append("name", user.name);
+    form.append("phone", user.phone);
+    form.append("addresses", JSON.stringify(updated));
+
+    await API.put("/user/me", form, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
 
   return (
-    <div
-      className="
-        min-h-screen w-full
-        bg-gradient-to-b from-[#0A122A] to-[#12203A]
-        dark:from-[#080E1A] dark:to-[#0A122A]
-        flex justify-center
-        pt-32 pb-14 px-4
-        transition-all
-      "
-    >
-      {/* CARD */}
-      <div
-        className="
-          w-full max-w-3xl
-          bg-white/70 dark:bg-white/10
-          backdrop-blur-xl 
-          shadow-xl 
-          rounded-xl 
-          p-10 
-          border border-white/30 dark:border-white/10
-          transition-all
-        "
-      >
-        <h1 className="text-4xl font-bold text-center text-gray-900 dark:text-gray-100 mb-8">
-          User Profile
-        </h1>
+    <div className="pt-32 pb-20 px-4 w-full flex justify-center">
+      <div className="w-full max-w-6xl flex flex-col md:flex-row gap-8">
 
-        {/* TABS */}
-        <div className="flex justify-center gap-4 mb-10">
-          {TABS.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-full font-medium transition-all ${
-                activeTab === tab
-                  ? "bg-green-600 text-white shadow scale-105"
-                  : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* LEFT SIDEBAR */}
+        <div className="md:w-1/3 w-full bg-white dark:bg-[#0f172a] shadow-lg rounded-xl p-6 h-fit">
+          <div className="flex flex-col items-center">
 
-        {/* ============================
-            PROFILE TAB
-        ============================ */}
-        {activeTab === "Profile" && (
-          <>
-            <div className="flex flex-col items-center mb-8">
-              <div className="relative">
-                <img
-                  src={user.profilePic || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                  className="w-36 h-36 rounded-full object-cover border-4 border-white shadow-lg"
-                />
-                {editMode && (
-                  <label className="absolute bottom-0 right-0 bg-green-600 p-2 rounded-full cursor-pointer shadow hover:bg-green-700 transition">
-                    <Camera size={18} color="white" />
-                    <input type="file" onChange={handlePhoto} className="hidden" />
-                  </label>
-                )}
-              </div>
+            <div className="relative">
+              <img
+                src={user.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                className="w-28 h-28 rounded-full object-cover border shadow-md"
+              />
 
-              <h2 className="text-2xl font-semibold mt-4 text-gray-900 dark:text-gray-100">
-                {user.name}
-              </h2>
-              <p className="text-gray-500 dark:text-gray-300">{user.email}</p>
-              <p className="text-gray-500 dark:text-gray-300">{user.phone}</p>
-            </div>
-
-            {/* Edit / Save */}
-            <div className="flex justify-center mb-6">
-              {!editMode ? (
-                <button
-                  onClick={() => setEditMode(true)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-xl flex items-center gap-2 shadow"
-                >
-                  <Pencil size={18} /> Edit Profile
-                </button>
-              ) : (
-                <button
-                  onClick={saveProfile}
-                  disabled={saving}
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl flex items-center gap-2 shadow disabled:opacity-50"
-                >
-                  <Save size={18} />
-                  {saving ? "Saving..." : "Save"}
-                </button>
+              {editMode && (
+                <label className="absolute bottom-0 right-0 bg-green-600 p-2 rounded-full cursor-pointer shadow-lg hover:bg-green-700">
+                  <Camera size={18} className="text-white" />
+                  <input type="file" onChange={handleAvatarUpload} className="hidden" />
+                </label>
               )}
             </div>
 
-            {/* Form */}
-            <div className="space-y-5">
+            <h2 className="text-xl font-semibold mt-3 text-gray-900 dark:text-white">{user.name}</h2>
+            <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
+            <p className="text-gray-600 dark:text-gray-400">{user.phone}</p>
+
+            {!editMode ? (
+              <button
+                className="mt-4 bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg flex items-center gap-2"
+                onClick={() => setEditMode(true)}
+              >
+                <Pencil size={18} /> Edit Profile
+              </button>
+            ) : (
+              <button
+                className="mt-4 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg flex items-center gap-2 disabled:opacity-50"
+                onClick={saveProfile}
+                disabled={saving}
+              >
+                <Save size={18} />
+                {saving ? "Saving..." : "Save"}
+              </button>
+            )}
+
+            <Link
+              to="/change-password"
+              className="mt-4 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Change Password
+            </Link>
+
+            <div className="mt-8 space-y-3 w-full">
+              {["Profile", "Orders", "Wishlist", "Notifications"].map((tab) => (
+                <button
+                  key={tab}
+                  className={`w-full text-left px-4 py-2 rounded-lg font-medium ${
+                    activeTab === tab
+                      ? "bg-green-600 text-white"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                  }`}
+                  onClick={() => setActiveTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT CONTENT */}
+        <div className="flex-1 bg-white dark:bg-[#0f172a] shadow-lg rounded-xl p-6">
+
+          {/* PROFILE TAB */}
+          {activeTab === "Profile" && (
+            <div className="space-y-6">
+
+              {/* BASIC INFO */}
               {["name", "email", "phone"].map((field) => (
                 <div key={field}>
-                  <label className="text-gray-700 dark:text-gray-300 font-medium">
-                    {field.charAt(0).toUpperCase() + field.slice(1)}
-                  </label>
+                  <label className="block mb-1 capitalize text-gray-700 dark:text-gray-300">{field}</label>
+
                   <input
-                    name={field}
-                    disabled={!editMode}
-                    value={user[field]}
-                    onChange={handleChange}
-                    className="
-                      w-full p-3 rounded-lg mt-1 
-                      bg-white dark:bg-[#111827]/40 
-                      border border-gray-300 dark:border-gray-700 
-                      text-gray-800 dark:text-gray-200 
-                      shadow-sm focus:ring-2 focus:ring-green-400 
-                      transition
-                    "
+                    disabled={!editMode || field === "email"}
+                    value={user[field] || ""}
+                    onChange={(e) => setUser({ ...user, [field]: e.target.value })}
+                    className="w-full p-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                   />
                 </div>
               ))}
 
-              {/* Address */}
+              {/* SAVED ADDRESSES */}
               <div>
-                <label className="text-gray-700 dark:text-gray-300 font-medium">
-                  Address
-                </label>
-                <textarea
-                  name="address"
-                  disabled={!editMode}
-                  value={user.address}
-                  onChange={handleChange}
-                  className="
-                    w-full p-3 rounded-lg mt-1 
-                    bg-white dark:bg-[#111827]/40 
-                    border border-gray-300 dark:border-gray-700 
-                    text-gray-800 dark:text-gray-200 
-                    shadow-sm focus:ring-2 focus:ring-green-400 
-                    transition
-                  "
-                />
+                <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Saved Addresses</h3>
+
+                {(user.addresses || []).length === 0 && (
+                  <p className="text-gray-500 dark:text-gray-300">No saved addresses.</p>
+                )}
+
+                {(user.addresses || []).map((addr, index) => (
+                  <div
+                    key={index}
+                    className="p-4 mb-3 bg-gray-100 dark:bg-gray-800 rounded-lg flex justify-between items-start"
+                  >
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-gray-100">{addr.label}</p>
+                      <p className="text-gray-600 dark:text-gray-300">{addr.fullAddress}</p>
+                      <p className="text-gray-600 dark:text-gray-300">{addr.phone}</p>
+                    </div>
+
+                    <button
+                      onClick={() => deleteAddress(index)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
               </div>
-            </div>
-          </>
-        )}
 
-        {/* ============================
-            ORDERS TAB
-        ============================ */}
-        {activeTab === "Orders" && (
-          <div className="space-y-6">
-            {dummyOrders.map((order) => (
-              <div
-                key={order.id}
-                className="
-                  w-full border p-5 
-                  rounded-xl bg-gray-50 dark:bg-white/5 
-                  shadow-sm hover:shadow-md transition
-                "
-              >
-                <div className="flex justify-between">
-                  <h3 className="text-lg font-semibold dark:text-gray-200">{order.id}</h3>
-                  <span className="text-gray-500 dark:text-gray-400">{order.date}</span>
-                </div>
+              {/* ADD ADDRESS FORM */}
+              <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
+                  Add Address
+                </h3>
 
-                <p className="text-gray-600 dark:text-gray-300 mt-2">
-                  Items: {order.items.join(", ")}
-                </p>
+                <input
+                  placeholder="Label (Home / Office)"
+                  className="w-full mb-3 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={addressForm.label}
+                  onChange={(e) => setAddressForm({ ...addressForm, label: e.target.value })}
+                />
 
-                <p className="font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                  ₹ {order.amount}
-                </p>
+                <textarea
+                  placeholder="Full Address"
+                  className="w-full mb-3 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={addressForm.fullAddress}
+                  onChange={(e) => setAddressForm({ ...addressForm, fullAddress: e.target.value })}
+                ></textarea>
 
-                <span
-                  className={`px-4 py-1 rounded-full text-white text-sm mt-2 inline-block ${
-                    order.status === "Delivered" ? "bg-green-600" : "bg-yellow-600"
-                  }`}
-                >
-                  {order.status}
-                </span>
+                <input
+                  placeholder="Phone Number"
+                  className="w-full mb-4 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  value={addressForm.phone}
+                  onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
+                />
 
                 <button
-                  onClick={() => setSelectedOrder(order)}
-                  className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-xl shadow hover:bg-blue-700 transition"
+                  onClick={saveAddress}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
                 >
-                  Track Order
+                  Save Address
                 </button>
               </div>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* ============================
-            WISHLIST TAB
-        ============================ */}
-        {activeTab === "Wishlist" && (
-          <div className="space-y-5">
-            {dummyWishlist.map((item) => (
-              <div
-                key={item.id}
-                className="
-                  bg-gray-50 dark:bg-white/5 
-                  p-5 
-                  rounded-xl 
-                  shadow-sm hover:shadow-md 
-                  transition flex justify-between items-center
-                "
-              >
-                <div>
-                  <h3 className="text-lg font-semibold dark:text-gray-200">{item.name}</h3>
-                  <p className="text-gray-600 dark:text-gray-400">₹ {item.price}</p>
+          {/* ORDERS TAB */}
+          {activeTab === "Orders" && (
+            <div className="space-y-5">
+              {orders.map((o) => (
+                <div key={o._id} className="p-5 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100">Order #{o._id}</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{o.items.length} items</p>
+                  <p className="text-green-600 dark:text-green-400 font-semibold">₹ {o.totalAmount}</p>
+                  <button
+                    onClick={() => setSelectedOrder(o)}
+                    className="mt-3 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                  >
+                    Track Order
+                  </button>
                 </div>
+              ))}
 
-                <button className="px-5 py-2 bg-green-600 text-white rounded-xl shadow hover:bg-green-700 transition">
-                  Add to Cart
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+              {orders.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-300">You have no orders yet.</p>
+              )}
+            </div>
+          )}
 
-        {/* ============================
-            NOTIFICATIONS TAB
-        ============================ */}
-        {activeTab === "Notifications" && (
-          <div className="space-y-4">
-            {dummyNotifications.map((msg, i) => (
-              <div
-                key={i}
-                className="
-                  bg-yellow-50 dark:bg-yellow-900/30 
-                  p-4 rounded-xl 
-                  border-l-4 border-yellow-600 dark:border-yellow-500 
-                  shadow-sm
-                "
-              >
-                <p className="text-gray-800 dark:text-gray-100">{msg}</p>
-              </div>
-            ))}
-          </div>
-        )}
+          {/* WISHLIST TAB */}
+          {activeTab === "Wishlist" && (
+            <div className="space-y-5">
+              {wishlist.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-300">Your wishlist is empty.</p>
+              )}
+
+              {wishlist.map((item) => (
+                <div
+                  key={item._id}
+                  className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl flex justify-between items-center"
+                >
+                  <div className="flex items-center gap-4">
+                    <img src={item.image || item.photo} className="w-16 h-16 object-cover rounded-lg" />
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-gray-100">{item.name}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">₹ {item.price}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => addToCart(item)}
+                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"
+                  >
+                    Move to Cart
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* NOTIFICATIONS TAB */}
+          {activeTab === "Notifications" && (
+            <div className="space-y-3">
+              {notifications.map((msg, i) => (
+                <div
+                  key={i}
+                  className="p-4 bg-yellow-200 dark:bg-yellow-800 rounded-lg text-gray-900 dark:text-gray-100"
+                >
+                  {msg}
+                </div>
+              ))}
+
+              {notifications.length === 0 && (
+                <p className="text-gray-500 dark:text-gray-300">No notifications yet.</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Track Order Popup */}
+      {/* ORDER TRACK MODAL */}
       {selectedOrder && (
-        <OrderTrackModal
-          order={selectedOrder}
-          onClose={() => setSelectedOrder(null)}
-        />
+        <OrderTrackModal order={selectedOrder} onClose={() => setSelectedOrder(null)} />
       )}
     </div>
   );

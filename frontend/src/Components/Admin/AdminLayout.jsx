@@ -1,129 +1,142 @@
-import React from "react";
+// src/Components/Admin/AdminLayout.jsx
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Menu, X } from "lucide-react";
 
 export default function AdminLayout({ title, children }) {
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-
-  /* 🔥 MAIN SIDEBAR MENU */
-  const menuItems = [
-    { label: "Dashboard", path: "/admin/dashboard", icon: "📊" },
-    { label: "Products", path: "/admin/products", icon: "📦" },
-    { label: "Add Product", path: "/admin/add-product", icon: "➕" },
-  ];
-
-  /* 🔥 DELIVERY MANAGEMENT MENU */
-  const deliveryMenu = [
-    { label: "Delivery Boys", path: "/admin/delivery", icon: "🚴" },
-    { label: "Add Delivery Boy", path: "/admin/delivery/add", icon: "➕" },
-    { label: "Assign Orders", path: "/admin/delivery/assign", icon: "📨" },
-  ];
+  const [open, setOpen] = useState(false);
 
   const logout = () => {
     localStorage.removeItem("loggedIn");
     localStorage.removeItem("role");
-    localStorage.removeItem("admin_token");
+    localStorage.removeItem("token");
     navigate("/admin/login");
   };
 
+  const menuItems = [
+    { name: "📊 Dashboard", path: "/admin/dashboard" },
+    { name: "📦 Products", path: "/admin/products" },
+    // { name: "➕ Add Product", path: "/admin/add-product" },   // ⭐ ADDED
+    { name: "🛒 Orders", path: "/admin/orders" },
+    { name: "🚴 Delivery Boys", path: "/admin/delivery" },
+    { name: "💹 Sales & Revenue", path: "/admin/sales" },
+  ];
+
   return (
-    <div className="min-h-screen flex bg-slate-900 text-slate-100">
-      
-      {/* SIDEBAR */}
-      <aside className="w-64 bg-slate-950 border-r border-slate-800 flex flex-col">
-        
-        <div className="px-6 py-5 border-b border-slate-800">
-          <h1 className="text-xl font-bold tracking-wide">
-            GreenBasket <span className="text-lime-400">Admin</span>
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Inventory & orders control panel
-          </p>
-        </div>
+    <div className="min-h-screen flex bg-[#0b0f19] text-white">
 
-        {/* MENU LIST */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+      {/* ==== MOBILE NAVBAR ==== */}
+      <div className="lg:hidden flex items-center justify-between px-5 py-4 bg-[#0d1220] border-b border-white/10 shadow-sm fixed w-full z-50">
+        <h1 className="text-lg font-bold">Admin Panel</h1>
 
-          {/* MAIN MENU */}
-          {menuItems.map((item) => {
-            const active = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition
-                  ${
-                    active
-                      ? "bg-lime-500/20 text-lime-300 border border-lime-500/40"
-                      : "text-slate-300 hover:bg-slate-800/80"
-                  }`}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
+        <button
+          onClick={() => setOpen(true)}
+          className="p-2 bg-white/10 rounded-lg border border-white/10"
+        >
+          <Menu size={22} />
+        </button>
+      </div>
 
-          {/* SECTION TITLE */}
-          <p className="text-xs text-slate-500 mt-5 mb-1 px-3">
-            DELIVERY MANAGEMENT
-          </p>
+      {/* ==== SIDEBAR (Desktop) ==== */}
+      <motion.aside
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="hidden lg:flex w-64 p-6 flex-col border-r border-white/10 bg-[#0d1220] fixed h-full"
+      >
+        <Sidebar pathname={pathname} menuItems={menuItems} logout={logout} />
+      </motion.aside>
 
-          {/* DELIVERY MENU */}
-          {deliveryMenu.map((item) => {
-            const active = location.pathname.startsWith(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition
-                  ${
-                    active
-                      ? "bg-blue-500/20 text-blue-300 border border-blue-500/40"
-                      : "text-slate-300 hover:bg-slate-800/80"
-                  }`}
-              >
-                <span>{item.icon}</span>
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* LOGOUT SECTION */}
-        <div className="px-4 py-4 border-t border-slate-800 text-xs text-slate-400">
+      {/* ==== MOBILE SIDEBAR (Slide) ==== */}
+      {open && (
+        <motion.div
+          initial={{ x: -200 }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 120 }}
+          className="fixed top-0 left-0 w-64 h-full bg-[#0d1220] p-6 shadow-xl z-50 lg:hidden"
+        >
           <button
-            onClick={logout}
-            className="w-full mb-3 text-sm font-semibold text-red-400 border border-red-500/40 rounded-lg py-2 hover:bg-red-500/10 transition"
+            onClick={() => setOpen(false)}
+            className="absolute top-3 right-3 p-2 rounded-lg bg-white/10 border border-white/10"
           >
-            Logout
+            <X size={22} />
           </button>
-          © {new Date().getFullYear()} GreenBasket
-        </div>
 
-      </aside>
+          <Sidebar pathname={pathname} menuItems={menuItems} logout={logout} />
+        </motion.div>
+      )}
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col">
+      {/* ==== MAIN CONTENT ==== */}
+      <main className="flex-1 lg:ml-64">
         
-        {/* TOP BAR */}
-        <header className="h-16 border-b border-slate-800 flex items-center justify-between px-8 bg-slate-900/80 backdrop-blur">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <div className="flex items-center gap-4 text-xs text-slate-400">
-            <span className="hidden sm:inline">Admin Panel</span>
-            <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-200">
+        {/* ==== TOP HEADER ==== */}
+        <header className="hidden lg:flex w-full px-8 py-5 items-center justify-between border-b border-white/10 bg-[#0d1220]">
+          <h1 className="text-xl font-semibold tracking-wide">{title}</h1>
+
+          <div className="flex items-center gap-4">
+
+            {/* ⭐ ADD PRODUCT BUTTON */}
+            <button
+              onClick={() => navigate("/admin/add-product")}
+              className="px-4 py-2 rounded-lg bg-lime-500 text-black font-semibold hover:bg-lime-400"
+            >
+              + Add Product
+            </button>
+
+            <span className="px-4 py-1.5 rounded-full bg-blue-500/20 border border-blue-500/30 text-blue-300 text-sm">
               Admin
             </span>
           </div>
         </header>
 
-        {/* CONTENT SLOT */}
-        <div className="flex-1 overflow-y-auto bg-slate-900 p-6">
+        {/* ==== PAGE BODY ==== */}
+        <div className="pt-20 lg:pt-8 px-5 lg:px-8 pb-8">
           {children}
         </div>
-
       </main>
-
     </div>
+  );
+}
+
+/* ---------------------------------------------
+   SIDEBAR COMPONENT
+---------------------------------------------- */
+function Sidebar({ pathname, menuItems, logout }) {
+  return (
+    <>
+      <h1 className="text-[22px] font-extrabold leading-tight">
+        GreenBasket
+        <span className="text-lime-400 block text-[20px] font-bold">Admin</span>
+      </h1>
+
+      <p className="text-[12px] text-slate-400 mt-1 tracking-wide">
+        Inventory & orders control panel
+      </p>
+
+      <nav className="mt-8 flex flex-col gap-1">
+        {menuItems.map((item, i) => (
+          <Link
+            key={i}
+            to={item.path}
+            className={`px-4 py-2.5 rounded-lg font-medium transition flex items-center gap-2 ${
+              pathname === item.path
+                ? "bg-lime-500/10 text-lime-400 border border-lime-500/20"
+                : "text-slate-300 hover:bg-white/5"
+            }`}
+          >
+            {item.name}
+          </Link>
+        ))}
+      </nav>
+
+      <button
+        onClick={logout}
+        className="mt-auto py-2.5 rounded-lg bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30"
+      >
+        Logout
+      </button>
+    </>
   );
 }
