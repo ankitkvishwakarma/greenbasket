@@ -20,6 +20,7 @@ import UserProfile from "./Components/Userprofile";
 import Success from "./Components/Auth/Success";
 import CartPage from "./Components/CartPage";
 import ChangePassword from "./Components/Auth/ChangePassword";
+import ProductDetails from "./Components/ProductDetails";
 
 /******** AUTH ********/
 import Login from "./Components/Auth/Login";
@@ -49,6 +50,7 @@ import DeliveryHistory from "./Components/Admin/DeliveryHistory";
 import DeliveryMap from "./Components/Admin/DeliveryMap";
 import RatingsSalary from "./Components/Admin/RatingsSalary";
 import AdminDeliveryAssign from "./Components/Admin/AdminDeliveryAssign";
+
 
 import EmployeeList from "./Components/Admin/EmployeeList";
 
@@ -110,6 +112,7 @@ export default function App() {
             <Route path="/fruits" element={<FruitsPage />} />
             <Route path="/blog" element={<BlogSection />} />
             <Route path="/contact" element={<ContactUs />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
 
             {/* 👤 USER PROTECTED */}
             <Route path="/userprofile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />

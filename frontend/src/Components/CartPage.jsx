@@ -7,7 +7,7 @@ export default function CartPage() {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const { loadCartCount } = useCart();   // ⭐ cart count sync
+  const { loadCartCount } = useCart();
   const navigate = useNavigate();
 
   // LOAD CART FROM BACKEND
@@ -128,12 +128,12 @@ export default function CartPage() {
 
             return (
               <div
-                key={item._id}   // ⭐ UNIQUE KEY FIXED
+                key={item._id}
                 className="flex gap-4 py-4 border-b last:border-b-0 dark:border-slate-700"
               >
-                {/* Product Image FIXED */}
+                {/* ⭐ FIXED PRODUCT IMAGE */}
                 <img
-                  src={p.image || "https://via.placeholder.com/80"}  // ⭐ FIXED EMPTY SRC
+                  src={p.images?.[0] || "https://via.placeholder.com/80"}
                   alt={p.name}
                   className="w-20 h-20 rounded-xl object-cover bg-slate-200"
                 />

@@ -4,7 +4,8 @@ import {
   getProducts,
   getProductById,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getProductsByCategory     // <-- REQUIRED
 } from "../controllers/product.controller.js";
 
 const router = express.Router();
@@ -15,7 +16,10 @@ router.post("/", createProduct);
 // GET ALL PRODUCTS
 router.get("/", getProducts);
 
-// GET SINGLE PRODUCT
+// GET PRODUCTS BY CATEGORY   <-- MUST BE ABOVE ID ROUTE
+router.get("/category/:categoryName", getProductsByCategory);
+
+// GET SINGLE PRODUCT BY ID
 router.get("/:id", getProductById);
 
 // UPDATE PRODUCT
