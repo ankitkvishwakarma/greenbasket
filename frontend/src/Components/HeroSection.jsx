@@ -6,8 +6,9 @@ export default function HeroSection() {
   return (
     <section
       className="
-      relative overflow-hidden rounded-3xl mx-3 md:mx-5 mt-4
-      min-h-auto md:min-h-[90vh]     /* ⭐ Mobile height NOT full 100% */
+      relative overflow-hidden rounded-3xl mx-3 md:mx-5  mt-[90px]
+      pt-[30px]
+      min-h-auto md:min-h-[60vh]     /* ⭐ Mobile height NOT full 100% */
       flex items-center justify-center
       bg-gradient-to-br from-green-200 to-green-300
       dark:from-[#08121f] dark:to-[#0f192c]
