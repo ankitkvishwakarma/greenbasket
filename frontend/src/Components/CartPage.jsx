@@ -70,6 +70,29 @@ export default function CartPage() {
     }
   }
 
+  // ⭐ NEW: CHECKOUT PROCESS — ORDER CREATE & REDIRECT
+  async function handleCheckout() {
+    try {
+      setUpdating(true);
+
+      const res = await API.post("/orders/checkout", {
+        paymentStatus: "PAID",
+      });
+
+      alert("Order placed successfully!");
+
+      await loadCartCount(); // cart icon update
+
+      navigate("/my-orders");
+
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert("Checkout failed");
+    } finally {
+      setUpdating(false);
+    }
+  }
+
   if (loading) {
     return (
       <div className="pt-28 flex justify-center items-center">
@@ -131,7 +154,6 @@ export default function CartPage() {
                 key={item._id}
                 className="flex gap-4 py-4 border-b last:border-b-0 dark:border-slate-700"
               >
-                {/* ⭐ FIXED PRODUCT IMAGE */}
                 <img
                   src={p.images?.[0] || "https://via.placeholder.com/80"}
                   alt={p.name}
@@ -145,7 +167,6 @@ export default function CartPage() {
                     ₹{p.price} {p.unit ? `/ ${p.unit}` : ""}
                   </p>
 
-                  {/* Quantity Controls */}
                   <div className="flex items-center gap-2 mt-3">
                     <button
                       onClick={() => updateQty(p._id, item.quantity - 1)}
@@ -177,7 +198,6 @@ export default function CartPage() {
                   </button>
                 </div>
 
-                {/* Line Total */}
                 <div className="text-right font-semibold">
                   ₹{(p.price || 0) * item.quantity}
                 </div>
@@ -209,12 +229,13 @@ export default function CartPage() {
             </span>
           </div>
 
+          {/* ⭐ UPDATED CHECKOUT BUTTON */}
           <button
-            onClick={() => navigate("/checkout")}
+            onClick={handleCheckout}
             className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-60"
             disabled={updating}
           >
-            Proceed to Checkout
+            {updating ? "Processing..." : "Proceed to Checkout"}
           </button>
 
           <button

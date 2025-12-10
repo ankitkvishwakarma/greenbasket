@@ -25,7 +25,7 @@ export default function VegetablesPage() {
   }, []);
 
   return (
-    <div className="px-6 md:px-20 py-16">
+    <div className="px-6 md:px-20 pt-19 py-16">
       <h1 className="text-3xl font-bold text-green-600 pt-4">
         Fresh Vegetables 🥬
       </h1>

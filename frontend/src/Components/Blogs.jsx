@@ -1,7 +1,6 @@
 import SuperMarketBanner from "./SuperMarketBanner";
 
 export default function BlogSection() {
-
   const blogs = [
     {
       id: 1,
@@ -24,24 +23,31 @@ export default function BlogSection() {
   ];
 
   return (
-    <div className="px-8 md:px-20 py-16">
+    <div className="px-8 md:px-20 pt-25 pb-16">
 
+      {/* Heading */}
       <h2 className="text-3xl font-bold text-center dark:text-white">
         Our Latest Blog Posts
       </h2>
+
       <p className="text-center text-gray-600 dark:text-gray-400 mt-2">
         Stay updated with food, health & nutrition tips
       </p>
 
+      {/* Banner */}
       <SuperMarketBanner />
-      <div className="grid md:grid-cols-3 gap-8 mt-12">
 
+      {/* Blog Cards */}
+      <div className="grid md:grid-cols-3 gap-8 mt-12">
         {blogs.map((item) => (
           <div
             key={item.id}
-            className="bg-white dark:bg-[#111827] shadow-lg rounded-2xl overflow-hidden hover:scale-[1.03] duration-300"
+            className="
+              bg-white dark:bg-[#111827] shadow-lg rounded-2xl 
+              overflow-hidden hover:scale-[1.03] 
+              transition-transform duration-300
+            "
           >
-
             <img src={item.img} className="w-full h-48 object-cover" />
 
             <div className="p-5">
@@ -59,7 +65,6 @@ export default function BlogSection() {
             </div>
           </div>
         ))}
-
       </div>
     </div>
   );

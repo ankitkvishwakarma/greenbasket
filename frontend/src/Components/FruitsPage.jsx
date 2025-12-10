@@ -24,7 +24,7 @@ export default function FruitsPage() {
   }, []);
 
   return (
-    <div className="px-6 md:px-20 py-16">
+    <div className="px-6 md:px-20 pt-19 py-16">
 
       {/* 🔥 Heading with padding top */}
       <h1 className="text-3xl font-bold text-orange-500 pt-4">

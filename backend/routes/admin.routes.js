@@ -1,18 +1,15 @@
 import express from "express";
-import { auth, requireRole } from "../middlewares/auth.middleware.js";
+import { auth, requireRole, adminOnly } from "../middlewares/auth.middleware.js";
 import { 
   adminLogin, 
   getAllUsers, 
   getAllProducts,
+  getOrders,
   addProduct,
   deleteProduct,
-  getOrders,
-  updateOrderStatus,
   createDeliveryBoy,
-  assignDeliveryBoy     // ✔ now perfect
+  assignDeliveryBoy
 } from "../controllers/admin.controller.js";
-
-import { adminOnly } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
@@ -28,7 +25,10 @@ router.get("/users", getAllUsers);
 // Delivery Boy Create
 router.post("/delivery/create", requireRole("ADMIN"), createDeliveryBoy);
 
-// Delivery Assign (FIXED: use params)
+// Orders (⭐ FIXED)
+router.get("/orders", getOrders);
+
+// Delivery Assign
 router.post("/assign/:orderId", assignDeliveryBoy);
 
 // Products
@@ -36,8 +36,8 @@ router.get("/products", getAllProducts);
 router.post("/products", addProduct);
 router.delete("/products/:id", deleteProduct);
 
-// Orders
-router.get("/orders", getOrders);
-router.put("/orders/:id", updateOrderStatus);
+// ❌ REMOVE OLD ORDER ROUTES
+// router.get("/orders", getOrders);
+// router.put("/orders/:id", updateOrderStatus);
 
 export default router;

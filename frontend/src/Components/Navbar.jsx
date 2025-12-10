@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useFlyToCart } from "../hooks/useFlyToCart";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
@@ -26,13 +26,18 @@ export default function Navbar() {
   const [isDark, setIsDark] = useState(false);
   const [logoutPopup, setLogoutPopup] = useState(false);
 
-  // Scroll animation states
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
+
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const searchRef = useRef(null);
+
   const [isAtTop, setIsAtTop] = useState(true);
   const [visible, setVisible] = useState(true);
   const [isShrunk, setIsShrunk] = useState(false);
   const lastScrollY = useRef(0);
 
-  // ⭐ NEW — Dropdown Delay State
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const hideTimeout = useRef(null);
 
@@ -42,14 +47,10 @@ export default function Navbar() {
   }
 
   function handleLeave() {
-    hideTimeout.current = setTimeout(() => {
-      setDropdownOpen(false);
-    }, 300);
+    hideTimeout.current = setTimeout(() => setDropdownOpen(false), 200);
   }
 
-  /* ==========================
-      LOAD USER AVATAR
-  =========================== */
+  /* LOAD USER */
   useEffect(() => {
     async function fetchUser() {
       try {
@@ -57,13 +58,10 @@ export default function Navbar() {
         setUser(data.user);
       } catch {}
     }
-
     if (isLoggedIn) fetchUser();
   }, [isLoggedIn]);
 
-  /* ==========================
-      SCROLL ANIMATION
-  =========================== */
+  /* SCROLL EFFECT */
   useEffect(() => {
     function onScroll() {
       const y = window.scrollY;
@@ -76,22 +74,61 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ==========================
-      THEME TOGGLE
-  =========================== */
+  /* OUTSIDE CLICK (DESKTOP SEARCH CLOSE) */
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setShowResults(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* iOS STYLE SEARCH - ESC CLOSE */
+  useEffect(() => {
+    const closeOnEsc = (e) => {
+      if (e.key === "Escape") {
+        setMobileSearchOpen(false);
+      }
+    };
+    document.addEventListener("keydown", closeOnEsc);
+    return () => document.removeEventListener("keydown", closeOnEsc);
+  }, []);
+
+  /* THEME TOGGLE */
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
-
     document.documentElement.classList.add("transition-all", "duration-300");
-
     localStorage.setItem("ui-theme", next ? "dark" : "light");
     document.documentElement.classList.toggle("dark", next);
   };
 
-  /* ==========================
-      LOGOUT CONFIRMATION
-  =========================== */
+  /* SEARCH FUNCTION */
+  async function handleSearch(e) {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (!value.trim()) {
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    try {
+      const res = await API.get(`/products?search=${value}`);
+      const list = res.data.products || [];
+
+      setResults(list);
+      setShowResults(true);
+    } catch {
+      setResults([]);
+      setShowResults(true);
+    }
+  }
+
+  /* LOGOUT */
   function logoutNow() {
     localStorage.clear();
     window.location.href = "/login";
@@ -99,6 +136,7 @@ export default function Navbar() {
 
   return (
     <>
+      {/* NAVBAR */}
       <motion.header
         initial={{ y: 0 }}
         animate={{ y: visible ? 0 : -120 }}
@@ -110,8 +148,14 @@ export default function Navbar() {
         <div className={`flex items-center justify-between px-4 md:px-8 ${isShrunk ? "py-2" : "py-4"}`}>
 
           {/* LOGO */}
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
-            <motion.div animate={isShrunk ? { scale: .9 } : { scale: 1 }} className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <motion.div
+              animate={isShrunk ? { scale: 0.9 } : { scale: 1 }}
+              className="flex items-center gap-3"
+            >
               <img src={icon} className={`${isShrunk ? "w-8 h-8" : "w-10 h-10"} rounded-md`} />
               <span className="font-bold text-lg text-gray-900 dark:text-white">GreenBasket</span>
             </motion.div>
@@ -133,6 +177,62 @@ export default function Navbar() {
           {/* ACTION BUTTONS */}
           <div className="flex items-center gap-6">
 
+            {/* DESKTOP SEARCH */}
+            <div ref={searchRef} className="relative hidden md:flex items-center">
+              <input
+                type="text"
+                placeholder="Search..."
+                value={query}
+                onChange={handleSearch}
+                onFocus={() => query.length > 0 && setShowResults(true)}
+                className="px-3 py-2 rounded-lg bg-white/20 dark:bg-black/20 
+                border border-gray-300 dark:border-gray-700
+                text-gray-800 dark:text-gray-200 backdrop-blur-md 
+                outline-none w-48 pr-10"
+              />
+
+              {/* 🔍 BUTTON */}
+              <button
+                onClick={() => {
+                  if (results.length > 0) navigate(`/product/${results[0]._id}`);
+                }}
+                className="absolute right-2 text-lg text-gray-700 dark:text-gray-300"
+              >
+                🔍
+              </button>
+
+              {/* DROPDOWN */}
+              {showResults && (
+                <div className="absolute top-12 w-full bg-white dark:bg-gray-900 rounded-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                  {results.length === 0 ? (
+                    <div className="px-4 py-3 text-red-500 font-semibold">
+                      ❌ No products found
+                    </div>
+                  ) : (
+                    results.map((item) => (
+                      <div
+                        key={item._id}
+                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer flex items-center gap-3"
+                        onClick={() => navigate(`/product/${item._id}`)}
+                      >
+                        <img src={item.images?.[0]} className="w-8 h-8 rounded object-cover" />
+                        <span>{item.name}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* MOBILE SEARCH BUTTON */}
+            <button
+              onClick={() => setMobileSearchOpen(true)}
+              className="md:hidden text-2xl text-gray-800 dark:text-gray-300"
+            >
+              🔍
+            </button>
+
+            {/* LOGIN */}
             {!isLoggedIn && (
               <Link
                 to="/login"
@@ -144,7 +244,7 @@ export default function Navbar() {
               </Link>
             )}
 
-            {/* LOGGED-IN */}
+            {/* LOGGED IN */}
             {isLoggedIn && (
               <>
                 {/* CART */}
@@ -161,7 +261,7 @@ export default function Navbar() {
                   )}
                 </div>
 
-                {/* ⭐ UPDATED DROPDOWN WITH DELAY ⭐ */}
+                {/* PROFILE DROPDOWN */}
                 <div
                   className="relative"
                   onMouseEnter={handleEnter}
@@ -169,28 +269,26 @@ export default function Navbar() {
                 >
                   <img
                     src={user?.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer border-2 border-green-500"
+                    className="w-10 h-10 rounded-full cursor-pointer border-2 border-green-500"
                   />
 
                   {dropdownOpen && (
-                    <div className="flex flex-col absolute right-0 top-12
-                      bg-white dark:bg-gray-900 text-sm rounded-md shadow-lg p-3 w-44 transition-all duration-200">
-
+                    <div className="absolute right-0 top-12 bg-white dark:bg-gray-900 p-3 rounded-md shadow-lg w-44">
                       {role !== "ADMIN" && (
-                        <Link to="/userprofile" className="py-2 hover:text-green-500">
+                        <Link to="/userprofile" className="py-2 block hover:text-green-500">
                           My Profile
                         </Link>
                       )}
 
                       {role === "ADMIN" && (
-                        <Link to="/admin/dashboard" className="py-2 hover:text-yellow-400">
+                        <Link to="/admin/dashboard" className="py-2 block hover:text-yellow-400">
                           Admin Dashboard
                         </Link>
                       )}
 
                       <button
                         onClick={() => setLogoutPopup(true)}
-                        className="text-left py-2 text-red-500 font-semibold"
+                        className="text-left py-2 text-red-500 font-semibold w-full"
                       >
                         Logout
                       </button>
@@ -211,16 +309,82 @@ export default function Navbar() {
         </div>
       </motion.header>
 
+      {/* ⭐ ULTRA PREMIUM iOS STYLE SEARCH PANEL (MOBILE) */}
+      <AnimatePresence>
+        {mobileSearchOpen && (
+          <motion.div
+            initial={{ y: "100%", opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: "100%", opacity: 0 }}
+            transition={{ type: "spring", stiffness: 120, damping: 18 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xl z-[999]"
+          >
+            {/* Panel */}
+            <motion.div
+              initial={{ y: 80 }}
+              animate={{ y: 0 }}
+              exit={{ y: 80 }}
+              transition={{ type: "spring", stiffness: 140, damping: 22 }}
+              className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-6 shadow-2xl max-h-[85vh]"
+            >
+              {/* Search Bar */}
+              <div className="flex items-center gap-3 mb-4">
+                <button
+                  onClick={() => setMobileSearchOpen(false)}
+                  className="text-2xl text-gray-700 dark:text-gray-300"
+                >
+                  ✖
+                </button>
+
+                <input
+                  type="text"
+                  value={query}
+                  onChange={handleSearch}
+                  placeholder="Search products..."
+                  autoFocus
+                  className="flex-1 px-4 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 
+                  text-gray-900 dark:text-gray-200 outline-none shadow-inner"
+                />
+              </div>
+
+              {/* Suggestions */}
+              <div className="overflow-y-auto max-h-[60vh]">
+                {results.length === 0 ? (
+                  <div className="text-center py-6 text-red-500 font-semibold">
+                    ❌ No products found
+                  </div>
+                ) : (
+                  results.map((item) => (
+                    <div
+                      key={item._id}
+                      onClick={() => {
+                        navigate(`/product/${item._id}`);
+                        setMobileSearchOpen(false);
+                      }}
+                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-100 
+                      dark:hover:bg-gray-800 cursor-pointer transition"
+                    >
+                      <img
+                        src={item.images?.[0]}
+                        className="w-12 h-12 rounded-lg object-cover shadow"
+                      />
+                      <span className="text-gray-900 dark:text-gray-200 text-lg">
+                        {item.name}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* LOGOUT POPUP */}
       {logoutPopup && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-80 shadow-xl">
-            <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-gray-100">
-              Logout?
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Are you sure you want to logout?
-            </p>
+            <h2 className="text-lg font-bold mb-3">Logout?</h2>
 
             <button
               onClick={logoutNow}
@@ -231,7 +395,7 @@ export default function Navbar() {
 
             <button
               onClick={() => setLogoutPopup(false)}
-              className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-gray-100 py-2 rounded-lg"
+              className="w-full bg-gray-200 dark:bg-gray-800 py-2 rounded-lg"
             >
               Cancel
             </button>

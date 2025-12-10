@@ -27,12 +27,9 @@ export const adminLogin = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Admin login error", err);
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 /* ================================
    CREATE DELIVERY BOY ACCOUNT
@@ -66,11 +63,27 @@ export const createDeliveryBoy = async (req, res) => {
     return res.status(201).json({ message: "Delivery Boy Created Successfully" });
 
   } catch (err) {
-    console.log("DELIVERY BOY ERROR:", err);
     return res.status(500).json({ message: "Server Error" });
   }
 };
 
+
+/* ================================
+        GET ALL ORDERS → ADMIN
+================================ */
+export const getOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
+      .populate("userId", "name email")
+      .populate("items.productId");
+
+    return res.status(200).json({ orders });
+
+  } catch (err) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 /* ================================
@@ -81,19 +94,14 @@ export const assignDeliveryBoy = async (req, res) => {
     const { deliveryBoyId } = req.body;
     const { orderId } = req.params;
 
-    if (!deliveryBoyId) {
+    if (!deliveryBoyId)
       return res.status(400).json({ message: "deliveryBoyId is required" });
-    }
 
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: "Order not found" });
+    if (!order)
+      return res.status(404).json({ message: "Order not found" });
 
-    const boy = await User.findById(deliveryBoyId);
-    if (!boy || boy.role !== "DELIVERY") {
-      return res.status(400).json({ message: "Invalid delivery boy" });
-    }
-
-    order.deliveryBoy = deliveryBoyId;
+    order.deliveryBoyId = deliveryBoyId;
     order.status = "ASSIGNED";
 
     await order.save();
@@ -104,15 +112,13 @@ export const assignDeliveryBoy = async (req, res) => {
     });
 
   } catch (err) {
-    console.log("ASSIGN ERROR:", err);
     return res.status(500).json({ message: "Server Error" });
   }
 };
 
 
-
 /* ================================
-              GET USERS
+           GET ALL USERS
 ================================ */
 export const getAllUsers = async (req, res) => {
   try {
@@ -125,14 +131,13 @@ export const getAllUsers = async (req, res) => {
 };
 
 
-
 /* ================================
         PRODUCT CONTROL
 ================================ */
 export const getAllProducts = async (req, res) => {
   try {
     const products = await Product.find();
-    return res.status(200).json(products);
+    return res.status(200).json({ products });
 
   } catch (err) {
     return res.status(500).json({ message: "Server error" });
@@ -157,56 +162,4 @@ export const deleteProduct = async (req, res) => {
   } catch (err) {
     return res.status(500).json({ message: "Server error" });
   }
-};
-
-
-
-/* ================================
-           ORDER CONTROL
-================================ */
-export const getOrders = async (req, res) => {
-  try {
-    const orders = await Order.find()
-      .populate("userId")
-      .populate("items.productId");
-
-    return res.status(200).json(orders);
-
-  } catch (err) {
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-export const updateOrderStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-
-    const order = await Order.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    );
-
-    return res.status(200).json({ message: "Order status updated", order });
-
-  } catch (err) {
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-
-
-/* ================================
-     FINAL EXPORT BLOCK (VERY IMPORTANT)
-================================ */
-export default {
-  adminLogin,
-  getAllUsers,
-  getAllProducts,
-  addProduct,
-  deleteProduct,
-  getOrders,
-  updateOrderStatus,
-  createDeliveryBoy,
-  assignDeliveryBoy
 };

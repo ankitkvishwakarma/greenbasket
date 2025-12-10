@@ -21,18 +21,23 @@ export default function AdminDashboard() {
 
   async function loadAll() {
     try {
-      const prodRes = await API.get("/products");   // ⭐ FIXED ROUTE
-      const orderRes = await API.get("/admin/orders");
+      // ⭐ Correct products route
+      const prodRes = await API.get("/products");
 
+      // ⭐ Correct orders route (checkout orders)
+      const orderRes = await API.get("/orders/admin/all");
+
+      // ⭐ Correct delivery boys route
       let empRes = { data: { deliveryBoys: [] } };
       try {
-        empRes = await API.get("/admin/delivery/all");
+        empRes = await API.get("/user/delivery-boys");
       } catch {}
 
       setProducts(prodRes?.data?.products || []);
       setOrders(orderRes?.data?.orders || []);
       setEmployees(empRes?.data?.deliveryBoys || []);
-    } catch {
+    } catch (err) {
+      console.log(err);
       setError("Failed to load data");
     } finally {
       setLoading(false);

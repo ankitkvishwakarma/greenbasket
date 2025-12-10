@@ -6,7 +6,8 @@ router.get("/", (req, res) => {
     { id: 1, name: "Rahul Kumar", message: "Great service!" },
     { id: 2, name: "Anjali Singh", message: "Fresh vegetables delivered!" },
     { id: 2, name: "Anjali Singh", message: "Fresh vegetables delivered!" },
-    { id: 2, name: "Anjali Singh", message: "Fresh vegetables delivered!" }
+    { id: 2, name: "Anjo Singh", message: "Fresh vegetables delivered!" }
+
   ]);
 });
 
