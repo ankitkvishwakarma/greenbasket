@@ -6,10 +6,8 @@ export default function HeroSection() {
   return (
     <section
       className="
-      relative overflow-hidden rounded-3xl mx-3 md:mx-5  mt-[90px]
-      pt-[30px]
-      min-h-auto md:min-h-[60vh]     /* ⭐ Mobile height NOT full 100% */
-      flex items-center justify-center
+      relative overflow-hidden rounded-3xl mx-3 md:mx-5 mt-4
+      min-h-[90vh] flex items-center justify-center
       bg-gradient-to-br from-green-200 to-green-300
       dark:from-[#08121f] dark:to-[#0f192c]
       p-6 sm:p-10 lg:p-16
@@ -18,6 +16,7 @@ export default function HeroSection() {
       transition-all
     "
     >
+
       {/* Background Glow Effects */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 w-64 h-64 bg-green-400/25 dark:bg-green-500/10 blur-[120px]" />
@@ -25,7 +24,7 @@ export default function HeroSection() {
         <div className="absolute -bottom-10 left-1/3 w-52 h-52 bg-green-200/20 blur-[85px]" />
       </div>
 
-      {/* HERO GRID */}
+      {/* HERO GRID — MOBILE FIRST */}
       <div
         className="
         max-w-7xl w-full grid 
@@ -34,7 +33,8 @@ export default function HeroSection() {
         items-center relative z-10
       "
       >
-        {/* IMAGE */}
+
+        {/* IMAGE FIRST on Mobile */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -44,17 +44,16 @@ export default function HeroSection() {
           <motion.img
             src={banner}
             animate={{ y: [0, -10, 0] }}
-            transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut' }}
+            transition={{ repeat: Infinity, duration: 3.5, ease: "easeInOut" }}
             className="
             w-60 sm:w-72 md:w-96 lg:w-[470px]
             drop-shadow-[0_15px_35px_rgba(0,0,0,0.25)]
             dark:drop-shadow-[0_15px_35px_rgba(0,255,150,0.25)]
-            rounded-xl
-          "
+            rounded-xl"
           />
         </motion.div>
 
-        {/* TEXT */}
+        {/* TEXT RIGHT ON DESKTOP */}
         <div className="space-y-5 sm:space-y-6 text-center md:text-left">
           <motion.h1
             initial={{ opacity: 0, y: -15 }}
@@ -75,7 +74,7 @@ export default function HeroSection() {
             Fresh fruits, vegetables & organic groceries delivered at your door.
           </p>
 
-          {/* CTA */}
+          {/* CTA Buttons */}
           <div className="flex gap-4 justify-center md:justify-start pt-2">
             <motion.button
               whileHover={{ scale: 1.08 }}
