@@ -19,32 +19,64 @@ const io = new Server(server, {
     credentials: true
   }
 });
+app.set("io", io);
 
 // Make io available to all routes
-app.use((req, res, next) => {
-  req.io = io;
-  next();
-});
+// app.use((req, res, next) => {
+//   req.io = io;
+//   next();
+// });
 
 // ================== SOCKET EVENTS ==================
+// ================== SOCKET EVENTS ==================
 io.on("connection", (socket) => {
-  console.log("⚡ Delivery Socket Connected:", socket.id);
+  console.log("⚡ Socket Connected:", socket.id);
+
+  // ================== ADMIN NOTIFICATION ==================
+
+  // Admin joins private notification room
+  socket.on("join-admin-room", () => {
+    socket.join("admin-room");
+
+    console.log(
+      `🔔 Admin joined notification room: ${socket.id}`
+    );
+  });
+
+
+  // ================== DELIVERY TRACKING ==================
 
   // Delivery Boy joins private room
   socket.on("track-me", (deliveryId) => {
     socket.join(`delivery-${deliveryId}`);
-    console.log(`🚗 Delivery Joined Room: delivery-${deliveryId}`);
+
+    console.log(
+      `🚗 Delivery Joined Room: delivery-${deliveryId}`
+    );
   });
+
 
   // Delivery Boy sends LIVE location
   socket.on("send-location", (data) => {
+
     // data = { orderId, lat, lng }
-    io.to(`order-${data.orderId}`).emit("live-location", data);
+
+    io.to(`order-${data.orderId}`).emit(
+      "live-location",
+      data
+    );
+
     console.log("📍 Live Location Update:", data);
   });
 
+
+  // ================== DISCONNECT ==================
+
   socket.on("disconnect", () => {
-    console.log("❌ Socket Disconnected:", socket.id);
+    console.log(
+      "❌ Socket Disconnected:",
+      socket.id
+    );
   });
 });
 
